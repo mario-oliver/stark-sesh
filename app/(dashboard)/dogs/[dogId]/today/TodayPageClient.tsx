@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
+import { DogPhoto } from '@/components/dog/DogPhoto'
 import { VoiceRecordBar } from '@/components/voice/VoiceRecordBar'
 import { useApiClient } from '@/hooks/use-api-client'
 import type {
@@ -292,13 +293,8 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
 
         <header className="mt-4 mb-6">
           <p className="text-xs uppercase tracking-widest text-zinc-500">Today</p>
-          <div className="flex items-center gap-3 mt-1">
-            {dog.photoUrl && (
-              <div className="relative size-12 rounded-full overflow-hidden border border-zinc-800 shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={dog.photoUrl} alt="" className="size-full object-cover" />
-              </div>
-            )}
+          <div className="flex items-center gap-4 mt-1">
+            <DogPhoto dogId={dog.id} photoUrl={dog.photoUrl} name={dog.name} size="xl" />
             <h1 className="text-2xl font-semibold">{dog.name}</h1>
           </div>
           <p className="text-zinc-400 text-sm mt-1">{formatDisplayDate(payload.date)}</p>

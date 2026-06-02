@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import { useEffect, useRef, useState } from 'react'
@@ -9,30 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/use-api-client'
 import { DEFAULT_ROUTINE_ITEMS, DEFAULT_ROUTINE_NAME } from '@/lib/care/default-routine'
-
-const MAX_PHOTO_BYTES = 2 * 1024 * 1024
-
-async function readPhotoAsDataUrl(file: File): Promise<string> {
-  if (!file.type.startsWith('image/')) {
-    throw new Error('Please choose an image file.')
-  }
-  if (file.size > MAX_PHOTO_BYTES) {
-    throw new Error('Photo must be 2 MB or smaller.')
-  }
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result)
-      } else {
-        reject(new Error('Could not read photo.'))
-      }
-    }
-    reader.onerror = () => reject(new Error('Could not read photo.'))
-    reader.readAsDataURL(file)
-  })
-}
+import { uploadDogPhotoToS3 } from '@/lib/upload-dog-photo'
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -45,7 +21,8 @@ export default function OnboardingPage() {
   const [breed, setBreed] = useState('')
   const [age, setAge] = useState('')
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [photoKey, setPhotoKey] = useState<string | null>(null)
+  const [photoUploading, setPhotoUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [checkingExisting, setCheckingExisting] = useState(true)
@@ -74,16 +51,19 @@ export default function OnboardingPage() {
   }, [apiClient, isLoaded, isReady, isSignedIn, router])
 
   const handlePhotoChange = async (file: File | undefined) => {
-    if (!file) return
+    if (!file || !isReady) return
     setError(null)
+    setPhotoUploading(true)
     try {
-      const dataUrl = await readPhotoAsDataUrl(file)
-      setPhotoPreview(dataUrl)
-      setPhotoUrl(dataUrl)
+      const { photoKey: key, viewUrl } = await uploadDogPhotoToS3(apiClient, file)
+      setPhotoKey(key)
+      setPhotoPreview(viewUrl)
     } catch (e) {
+      setPhotoKey(null)
       setPhotoPreview(null)
-      setPhotoUrl(null)
       setError(e instanceof Error ? e.message : 'Invalid photo')
+    } finally {
+      setPhotoUploading(false)
     }
   }
 
@@ -103,7 +83,7 @@ export default function OnboardingPage() {
         name: name.trim(),
         breed: breed.trim() || null,
         age: parsedAge,
-        photoUrl
+        photoKey
       })
       router.replace(`/dogs/${res.data.id}/today`)
     } catch (e) {
@@ -149,6 +129,10 @@ export default function OnboardingPage() {
                 setError('What’s your dog’s name?')
                 return
               }
+              if (photoUploading) {
+                setError('Wait for the photo to finish uploading.')
+                return
+              }
               setError(null)
               setStep(2)
             }}
@@ -156,20 +140,21 @@ export default function OnboardingPage() {
             <div className="flex flex-col items-center gap-3">
               <button
                 type="button"
+                disabled={photoUploading}
                 onClick={() => fileInputRef.current?.click()}
-                className="relative size-28 rounded-full border-2 border-dashed border-zinc-700 bg-zinc-900/60 overflow-hidden hover:border-amber-600/60 transition-colors"
+                className="relative size-36 rounded-full border-2 border-dashed border-zinc-700 bg-zinc-900/60 overflow-hidden hover:border-amber-600/60 transition-colors disabled:opacity-60"
               >
                 {photoPreview ? (
-                  <Image
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
                     src={photoPreview}
                     alt=""
-                    fill
-                    className="object-cover"
-                    unoptimized
+                    className="size-full object-cover"
+                    referrerPolicy="no-referrer"
                   />
                 ) : (
                   <span className="text-xs text-zinc-500 px-2 text-center leading-tight">
-                    Add photo
+                    {photoUploading ? 'Uploading…' : 'Add photo'}
                     <br />
                     <span className="text-zinc-600">(optional)</span>
                   </span>
@@ -178,7 +163,7 @@ export default function OnboardingPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif"
                 className="sr-only"
                 onChange={e => void handlePhotoChange(e.target.files?.[0])}
               />
@@ -188,7 +173,7 @@ export default function OnboardingPage() {
                   className="text-xs text-zinc-500 underline"
                   onClick={() => {
                     setPhotoPreview(null)
-                    setPhotoUrl(null)
+                    setPhotoKey(null)
                     if (fileInputRef.current) fileInputRef.current.value = ''
                   }}
                 >
@@ -240,7 +225,11 @@ export default function OnboardingPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-black">
+            <Button
+              type="submit"
+              disabled={photoUploading}
+              className="w-full bg-amber-600 hover:bg-amber-500 text-black"
+            >
               Continue
             </Button>
           </form>
@@ -250,11 +239,17 @@ export default function OnboardingPage() {
           <div className="mt-8">
             <div className="flex items-center gap-4 p-4 rounded-lg border border-zinc-800 bg-zinc-900/40">
               {photoPreview ? (
-                <div className="relative size-14 rounded-full overflow-hidden shrink-0">
-                  <Image src={photoPreview} alt="" fill className="object-cover" unoptimized />
+                <div className="relative size-20 rounded-full overflow-hidden shrink-0 border border-zinc-700">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photoPreview}
+                    alt=""
+                    className="size-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
               ) : (
-                <div className="size-14 rounded-full bg-zinc-800 flex items-center justify-center text-lg font-medium text-zinc-400 shrink-0">
+                <div className="size-20 rounded-full bg-zinc-800 flex items-center justify-center text-xl font-medium text-zinc-400 shrink-0">
                   {name.trim().charAt(0).toUpperCase() || '?'}
                 </div>
               )}
@@ -300,7 +295,7 @@ export default function OnboardingPage() {
               <Button
                 type="button"
                 className="flex-1 bg-amber-600 hover:bg-amber-500 text-black"
-                disabled={busy}
+                disabled={busy || photoUploading}
                 onClick={() => void handleCreate()}
               >
                 {busy ? 'Setting up…' : 'Start care log'}

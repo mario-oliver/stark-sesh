@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { DogPhoto } from '@/components/dog/DogPhoto'
 import { useApiClient } from '@/hooks/use-api-client'
 import type { DogRecord } from '@/lib/api/endpoints/dogs'
 
@@ -27,12 +28,9 @@ export function ProfileClient({ dogId }: { dogId: string }) {
       <Link href={`/dogs/${dogId}/today`} className="text-sm text-amber-400 underline">
         ← Today
       </Link>
-      {dog.photoUrl && (
-        <div className="mt-6 relative size-24 rounded-full overflow-hidden border border-zinc-800">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={dog.photoUrl} alt="" className="size-full object-cover" />
-        </div>
-      )}
+      <div className="mt-6">
+        <DogPhoto dogId={dog.id} photoUrl={dog.photoUrl} name={dog.name} size="xl" />
+      </div>
       <h1 className="text-2xl font-semibold mt-4">{dog.name}</h1>
       {dog.breed && <p className="text-zinc-400 mt-2">Breed: {dog.breed}</p>}
       {dog.age != null && <p className="text-zinc-400">Age: {dog.age}</p>}

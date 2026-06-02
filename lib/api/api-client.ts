@@ -1,6 +1,8 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
 import type { DogsApi } from './endpoints/dogs'
 import { dogsMethods } from './endpoints/dogs'
+import type { UploadsApi } from './endpoints/uploads'
+import { uploadsMethods } from './endpoints/uploads'
 import type { UsersApi } from './endpoints/users'
 import { userMethods } from './endpoints/users'
 
@@ -78,9 +80,9 @@ class ApiClient {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-interface ApiClient extends UsersApi, DogsApi {}
+interface ApiClient extends UsersApi, DogsApi, UploadsApi {}
 
-Object.assign(ApiClient.prototype, userMethods, dogsMethods)
+Object.assign(ApiClient.prototype, userMethods, dogsMethods, uploadsMethods)
 
 export const apiClient = new ApiClient()
 export { ApiClient }

@@ -47,7 +47,8 @@ export interface CreateDogInput {
   name: string
   breed?: string | null
   age?: number | null
-  photoUrl?: string | null
+  /** S3 object key from presigned upload */
+  photoKey?: string | null
   notes?: string | null
 }
 
@@ -55,7 +56,7 @@ export interface UpdateDogInput {
   name?: string
   breed?: string | null
   age?: number | null
-  photoUrl?: string | null
+  photoKey?: string | null
   notes?: string | null
 }
 
