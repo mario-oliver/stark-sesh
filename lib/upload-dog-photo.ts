@@ -1,6 +1,6 @@
 import type { ApiClient } from '@/lib/api/api-client'
 
-export const MAX_DOG_PHOTO_BYTES = 2 * 1024 * 1024
+export const MAX_DOG_PHOTO_BYTES = 10 * 1024 * 1024
 
 const DISPLAYABLE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 
@@ -31,7 +31,7 @@ export function validateDogPhotoFile(file: File): void {
     throw new Error('Use a JPEG, PNG, WebP, or GIF photo (HEIC from iPhone may not display).')
   }
   if (file.size > MAX_DOG_PHOTO_BYTES) {
-    throw new Error('Photo must be 2 MB or smaller.')
+    throw new Error(`Photo must be ${MAX_DOG_PHOTO_BYTES / (1024 * 1024)} MB or smaller.`)
   }
 }
 
