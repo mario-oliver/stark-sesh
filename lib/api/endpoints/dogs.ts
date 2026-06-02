@@ -35,10 +35,28 @@ export interface DogRecord {
   name: string
   breed: string | null
   age: number | null
+  photoUrl: string | null
   notes: string | null
   createdAt: string
   updatedAt: string
   role?: string
+  defaultCarePlan?: string
+}
+
+export interface CreateDogInput {
+  name: string
+  breed?: string | null
+  age?: number | null
+  photoUrl?: string | null
+  notes?: string | null
+}
+
+export interface UpdateDogInput {
+  name?: string
+  breed?: string | null
+  age?: number | null
+  photoUrl?: string | null
+  notes?: string | null
 }
 
 export interface DailyCareActionRecord {
@@ -96,6 +114,8 @@ export interface TodayPayload {
 
 export interface DogsApi {
   listDogs(): Promise<{ success: boolean; data: DogRecord[] }>
+  createDog(input: CreateDogInput): Promise<{ success: boolean; data: DogRecord }>
+  updateDog(dogId: string, input: UpdateDogInput): Promise<{ success: boolean; data: DogRecord }>
   getDog(dogId: string): Promise<{ success: boolean; data: DogRecord }>
   getToday(dogId: string, date?: string): Promise<{ success: boolean; data: TodayPayload }>
   getHistory(
@@ -141,6 +161,20 @@ export interface DogsApi {
 export const dogsMethods = {
   async listDogs(this: ApiClient) {
     return this.request<{ success: boolean; data: DogRecord[] }>('/v1/dogs')
+  },
+
+  async createDog(this: ApiClient, input: CreateDogInput) {
+    return this.request<{ success: boolean; data: DogRecord }>('/v1/dogs', {
+      method: 'POST',
+      data: input
+    })
+  },
+
+  async updateDog(this: ApiClient, dogId: string, input: UpdateDogInput) {
+    return this.request<{ success: boolean; data: DogRecord }>(`/v1/dogs/${dogId}`, {
+      method: 'PATCH',
+      data: input
+    })
   },
 
   async getDog(this: ApiClient, dogId: string) {

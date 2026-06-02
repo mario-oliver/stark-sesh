@@ -22,6 +22,7 @@ export default function TodayRedirectPage() {
         const res = await apiClient.listDogs()
         const dogs = res.data
         if (dogs.length === 0) {
+          router.replace('/onboarding')
           return
         }
         router.replace(`/dogs/${dogs[0].id}/today`)

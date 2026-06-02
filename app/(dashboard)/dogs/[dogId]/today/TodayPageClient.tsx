@@ -292,7 +292,15 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
 
         <header className="mt-4 mb-6">
           <p className="text-xs uppercase tracking-widest text-zinc-500">Today</p>
-          <h1 className="text-2xl font-semibold mt-1">{dog.name}</h1>
+          <div className="flex items-center gap-3 mt-1">
+            {dog.photoUrl && (
+              <div className="relative size-12 rounded-full overflow-hidden border border-zinc-800 shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={dog.photoUrl} alt="" className="size-full object-cover" />
+              </div>
+            )}
+            <h1 className="text-2xl font-semibold">{dog.name}</h1>
+          </div>
           <p className="text-zinc-400 text-sm mt-1">{formatDisplayDate(payload.date)}</p>
           <p className="text-amber-400/90 text-sm mt-2">
             {progress.completed} of {progress.total} care actions done
