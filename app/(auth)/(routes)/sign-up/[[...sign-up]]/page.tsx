@@ -57,7 +57,7 @@ export default function Page() {
           if (response.status === 409) {
             console.log('User already exists in backend')
             setHasCreatedUser(true)
-            router.push('/harada')
+            router.push('/today')
             return
           }
 
@@ -70,7 +70,7 @@ export default function Page() {
           toast.success('Welcome! Your account is ready.')
           // Small delay to show success message
           setTimeout(() => {
-            router.push('/harada')
+            router.push('/today')
           }, 1000)
         }
       } catch (err) {
@@ -78,7 +78,7 @@ export default function Page() {
         // Don't block the user - they can still access the app
         toast.warning('Account created, but there was a sync issue. You can still continue.')
         setTimeout(() => {
-          router.push('/harada')
+          router.push('/today')
         }, 2000)
       }
     }

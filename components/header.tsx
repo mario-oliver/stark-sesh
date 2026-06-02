@@ -14,16 +14,16 @@ const NavBar = () => {
         href="/"
         className="text-lg font-semibold text-zinc-100 hover:text-primary-brand transition-colors"
       >
-        FilmSesh
+        Stark Health
       </Link>
       <nav className="flex items-center gap-3">
         <SignedOut>
-          <SignInButton forceRedirectUrl="/entries">
+          <SignInButton forceRedirectUrl="/today">
             <button className="text-zinc-400 hover:text-zinc-200 text-sm font-medium">
               Sign in
             </button>
           </SignInButton>
-          <SignUpButton forceRedirectUrl="/entries">
+          <SignUpButton forceRedirectUrl="/today">
             <button className="bg-primary-brand hover:bg-primary-brand-hover text-white rounded-full font-medium text-sm h-9 px-4 cursor-pointer transition-colors">
               Sign up
             </button>
@@ -31,16 +31,10 @@ const NavBar = () => {
         </SignedOut>
         <SignedIn>
           <Link
-            href="/campaigns"
-            className="text-zinc-400 hover:text-zinc-200 text-sm font-medium hidden sm:inline"
-          >
-            Campaigns
-          </Link>
-          <Link
-            href="/entries"
+            href="/today"
             className="text-zinc-400 hover:text-zinc-200 text-sm font-medium"
           >
-            Entries
+            Today
           </Link>
           <UserButton
             afterSignOutUrl="/"

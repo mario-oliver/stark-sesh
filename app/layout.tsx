@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "FilmSesh — Voice AI coach assistant for tryouts, practices & games",
+  title: 'Stark Health — Voice-first dog PT care',
   description:
-    "Capture observations by voice during tryouts, practices, and games. FilmSesh tracks everything and analyzes your notes so you get key insights.",
+    'Coordinate your dog physical therapy and mobility care through voice. Stark Health structures daily PT work for your whole care team.',
 }
 
 export const viewport = {

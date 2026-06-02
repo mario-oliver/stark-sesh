@@ -16,10 +16,9 @@ export async function POST(request: Request) {
     const promptParam = (formData.get('prompt') as string | null)?.trim()
     const language = (formData.get('language') as string | null) ?? undefined
 
-    // Default prompt so the model knows we're talking about basketball (coaching, plays, strategy)
     const prompt =
       promptParam ||
-      'This transcript is about basketball. It may include coaching terms, plays, sets, player positions, and game strategy.'
+      'This transcript is a caregiver voice update about dog physical therapy and mobility care, including stretches, exercises, tolerance, and health observations.'
 
     const result = await transcribe(file, {
       model,

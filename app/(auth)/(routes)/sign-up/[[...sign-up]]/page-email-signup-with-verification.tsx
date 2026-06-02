@@ -139,7 +139,7 @@ export default function Page() {
           setCreatingBackendUser(false)
         }
 
-        router.push('/harada')
+        router.push('/today')
       } else {
         console.error(JSON.stringify(signUpAttempt, null, 2))
         toast.error('Email verification incomplete. Please try again.')
@@ -192,8 +192,8 @@ export default function Page() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign Up for Harada Method</h1>
-          <p className="text-lg text-gray-600">Create your account and start achieving your goals</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign up for Stark Health</h1>
+          <p className="text-lg text-gray-600">Create your account to coordinate your dog&apos;s PT care</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-8">

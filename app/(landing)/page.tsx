@@ -1,114 +1,64 @@
-import Link from "next/link";
-import { SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
-import { Mic, ClipboardList, Lightbulb } from "lucide-react";
-import { MarketingHero } from "@/components/marketing/MarketingHero";
+import Link from 'next/link'
+import { SignInButton, SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs'
+import { Mic, ClipboardList, Heart } from 'lucide-react'
+import { MarketingHero } from '@/components/marketing/MarketingHero'
 
 const primaryButton =
-  "bg-primary-brand hover:bg-primary-brand-hover text-white font-semibold rounded-full transition-colors";
+  'bg-primary-brand hover:bg-primary-brand-hover text-white font-semibold rounded-full transition-colors'
 const outlineButton =
-  "border border-zinc-600 hover:border-zinc-500 text-zinc-200 rounded-full font-medium transition-colors";
+  'border border-zinc-600 hover:border-zinc-500 text-zinc-200 rounded-full font-medium transition-colors'
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#0c0c0c] text-zinc-100 font-sans">
-      <div
-        className="fixed inset-0 pointer-events-none opacity-[0.03]"
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            90deg,
-            transparent,
-            transparent 79px,
-            currentColor 79px,
-            currentColor 80px
-          )`,
-        }}
-      />
       <MarketingHero
-        eyebrow="Voice AI coach assistant"
+        eyebrow="Voice-first dog PT care"
         headline={
           <>
-            Your AI assistant for{" "}
-            <span className="text-primary-brand">tryouts, practices, and games</span>
+            Coordinate <span className="text-primary-brand">Stark&apos;s daily PT</span> by talking to
+            the app
           </>
         }
-        subheadline="Speak your observations in real time. FilmSesh keeps track of everything, then analyzes your full set of notes so you get key insights—who stood out, what to work on, and what to remember."
+        subheadline="Caregivers speak naturally about stretches, walks, and how your dog is doing. Stark Health transcribes your voice, maps it to today's PT plan, and keeps everyone on the same page."
       >
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <SignedOut>
-            <SignUpButton forceRedirectUrl="/entries">
-              <button className={`${primaryButton} h-12 px-8`}>Get started free</button>
+            <SignUpButton forceRedirectUrl="/today">
+              <button className={`${primaryButton} h-12 px-8`}>Get started</button>
             </SignUpButton>
-            <SignInButton forceRedirectUrl="/entries">
+            <SignInButton forceRedirectUrl="/today">
               <button className={`${outlineButton} h-12 px-8`}>Sign in</button>
             </SignInButton>
           </SignedOut>
           <SignedIn>
-            <Link href="/create" className={`${primaryButton} h-12 px-8 flex items-center justify-center`}>
-              Create entry
+            <Link href="/today" className={`${primaryButton} h-12 px-8 flex items-center justify-center`}>
+              Open today
             </Link>
           </SignedIn>
         </div>
       </MarketingHero>
 
-      <main className="relative max-w-5xl mx-auto px-6 sm:px-8 pb-24">
-        <div className="grid sm:grid-cols-3 gap-8 sm:gap-10 mb-24">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center mb-4 text-primary-brand">
-              <Mic className="w-6 h-6" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">Speak as you coach</h3>
-            <p className="text-zinc-500 text-sm">
-              During tryouts, practice, or games, talk into your phone or device.
-              FilmSesh transcribes and saves each observation so you stay present
-              on the court.
-            </p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center mb-4 text-primary-brand">
-              <ClipboardList className="w-6 h-6" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">All observations in one place</h3>
-            <p className="text-zinc-500 text-sm">
-              Every note is captured and organized—by session, player, or topic.
-              No more lost scraps of paper or forgotten moments after the whistle.
-            </p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center mb-4 text-primary-brand">
-              <Lightbulb className="w-6 h-6" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">Key insights, not just notes</h3>
-            <p className="text-zinc-500 text-sm">
-              FilmSesh analyzes your full set of observations and surfaces what
-              matters: standout players, patterns, gaps, and action items so you
-              can coach with clarity.
-            </p>
-          </div>
+      <section className="max-w-3xl mx-auto px-6 py-16 grid gap-10 sm:grid-cols-3">
+        <div className="text-center">
+          <Mic className="w-8 h-8 text-amber-500 mx-auto mb-3" />
+          <h3 className="font-medium mb-2">Speak, don&apos;t tap</h3>
+          <p className="text-sm text-zinc-500">Record a care update in seconds instead of checking boxes.</p>
         </div>
+        <div className="text-center">
+          <ClipboardList className="w-8 h-8 text-amber-500 mx-auto mb-3" />
+          <h3 className="font-medium mb-2">Daily PT plan</h3>
+          <p className="text-sm text-zinc-500">Configurable stretches, workouts, and checkpoints.</p>
+        </div>
+        <div className="text-center">
+          <Heart className="w-8 h-8 text-amber-500 mx-auto mb-3" />
+          <h3 className="font-medium mb-2">Shared care log</h3>
+          <p className="text-sm text-zinc-500">Family and walkers see the same structured status.</p>
+        </div>
+      </section>
 
-        <div className="rounded-2xl bg-zinc-800/50 border border-zinc-700/50 p-8 sm:p-10 text-center">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-2">
-            Ready to coach with a voice AI assistant?
-          </h2>
-          <p className="text-zinc-500 mb-6 max-w-md mx-auto">
-            Sign in to start capturing observations and get insights from every
-            tryout, practice, and game.
-          </p>
-          <SignedOut>
-            <SignUpButton forceRedirectUrl="/entries">
-              <button className={`${primaryButton} h-11 px-6`}>Create account</button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <Link
-              href="/create"
-              className={`inline-flex items-center justify-center ${primaryButton} h-11 px-6`}
-            >
-              Create entry
-            </Link>
-          </SignedIn>
-        </div>
-      </main>
+      <p className="text-center text-xs text-zinc-600 max-w-md mx-auto px-6 pb-16">
+        Stark Health helps organize care notes and PT routines. It does not provide veterinary medical advice.
+      </p>
     </div>
-  );
+  )
 }
