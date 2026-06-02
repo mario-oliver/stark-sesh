@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useApiClient } from '@/hooks/use-api-client'
+import { DEFAULT_DOG_PHOTO_URL } from '@/lib/default-dog-photo'
 import { cn } from '@/lib/utils'
 
 type Size = 'md' | 'lg' | 'xl'
@@ -55,17 +56,23 @@ export function DogPhoto({ dogId, photoUrl, name, size = 'lg', className }: Prop
     }
   }
 
+  const fallbackSrc = DEFAULT_DOG_PHOTO_URL
+
   if (!src || failed) {
     return (
       <div
         className={cn(
           sizeClasses[size],
-          'rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 text-zinc-400 font-semibold',
+          'rounded-full overflow-hidden border border-zinc-700 shrink-0 bg-zinc-900',
           className
         )}
-        aria-hidden
       >
-        {name.trim().charAt(0).toUpperCase() || '?'}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={fallbackSrc}
+          alt={`${name} profile`}
+          className="size-full object-cover"
+        />
       </div>
     )
   }

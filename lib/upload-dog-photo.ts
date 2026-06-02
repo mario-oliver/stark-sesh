@@ -4,8 +4,29 @@ export const MAX_DOG_PHOTO_BYTES = 2 * 1024 * 1024
 
 const DISPLAYABLE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 
+const EXT_TO_TYPE: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  gif: 'image/gif'
+}
+
+/** Browsers often leave `file.type` empty; infer from the filename when possible. */
+export function inferDogPhotoContentType(file: File): string {
+  const fromType = file.type.split(';')[0]?.trim().toLowerCase()
+  if (fromType && fromType !== 'application/octet-stream' && DISPLAYABLE_TYPES.includes(fromType)) {
+    return fromType
+  }
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  if (ext && EXT_TO_TYPE[ext]) {
+    return EXT_TO_TYPE[ext]
+  }
+  return fromType || ''
+}
+
 export function validateDogPhotoFile(file: File): void {
-  const type = file.type.split(';')[0]?.toLowerCase()
+  const type = inferDogPhotoContentType(file)
   if (!type || !DISPLAYABLE_TYPES.includes(type)) {
     throw new Error('Use a JPEG, PNG, WebP, or GIF photo (HEIC from iPhone may not display).')
   }
@@ -23,7 +44,7 @@ export async function uploadDogPhotoToS3(
 ): Promise<{ photoKey: string; viewUrl: string }> {
   validateDogPhotoFile(file)
 
-  const contentType = file.type || 'application/octet-stream'
+  const contentType = inferDogPhotoContentType(file)
   const presign = await apiClient.presignDogPhoto({
     contentType,
     contentLength: file.size
