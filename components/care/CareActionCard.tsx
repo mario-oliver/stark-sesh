@@ -22,6 +22,11 @@ export function CareActionCard({
             <Badge variant="outline" className="border-zinc-700 text-zinc-400">
               {CATEGORY_LABELS[action.category]}
             </Badge>
+            {(action.steps?.length ?? 0) > 0 && (
+              <Badge variant="outline" className="border-amber-800/50 text-amber-400/90">
+                {action.steps.length} movement{action.steps.length === 1 ? '' : 's'}
+              </Badge>
+            )}
             <span className="text-xs text-zinc-500 self-center">
               {formatScheduleLabel(action.frequency, action.timeOfDay)}
             </span>

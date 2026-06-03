@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { ActionRow } from '@/components/care/ActionRow'
+import { ExerciseCard } from '@/components/care/ExerciseCard'
 import { CareActionCard } from '@/components/care/CareActionCard'
 import { CareActionForm } from '@/components/care/CareActionForm'
 import { DogSubNav } from '@/components/dog/DogSubNav'
@@ -119,7 +119,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
         </Link>
 
         <header className="mt-4 mb-2">
-          <h1 className="text-2xl font-semibold">Tasks</h1>
+          <h1 className="text-2xl font-semibold">Exercises</h1>
           <p className="text-sm text-zinc-500 mt-1">Manage your care routine and daily schedule</p>
         </header>
 
@@ -242,7 +242,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
               schedulePayload.dailyLog.dailyCareActions.length > 0 ? (
                 <ul className="space-y-3">
                   {schedulePayload.dailyLog.dailyCareActions.map(action => (
-                    <ActionRow
+                    <ExerciseCard
                       key={action.id}
                       action={action}
                       dogId={dogId}
@@ -267,6 +267,16 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
         action={editingAction}
         onSubmit={handleSaveAction}
         busy={busy}
+        dogId={dogId}
+        onMovementsChanged={async () => {
+          if (!isReady) return
+          const res = await apiClient.getCarePlan(dogId)
+          setPlan(res.data)
+          if (editingAction) {
+            const refreshed = res.data.actions.find(a => a.id === editingAction.id)
+            if (refreshed) setEditingAction(refreshed)
+          }
+        }}
       />
 
       <Dialog open={!!deactivatingAction} onOpenChange={open => !open && setDeactivatingAction(null)}>

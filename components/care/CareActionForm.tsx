@@ -29,6 +29,7 @@ import {
   FREQUENCY_OPTIONS,
   TIME_OF_DAY_OPTIONS
 } from '@/lib/care/labels'
+import { MovementEditor } from '@/components/care/MovementEditor'
 
 type FormState = {
   name: string
@@ -87,13 +88,17 @@ export function CareActionForm({
   onOpenChange,
   action,
   onSubmit,
-  busy
+  busy,
+  dogId,
+  onMovementsChanged
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   action?: CareActionRecord | null
   onSubmit: (input: CreateCareActionInput | UpdateCareActionInput) => Promise<void>
   busy?: boolean
+  dogId?: string
+  onMovementsChanged?: () => void
 }) {
   const [form, setForm] = useState<FormState>(action ? formFromAction(action) : emptyForm())
   const [error, setError] = useState<string | null>(null)
@@ -254,6 +259,10 @@ export function CareActionForm({
           </div>
 
           {error && <p className="text-sm text-red-400">{error}</p>}
+
+          {action && dogId && onMovementsChanged && (
+            <MovementEditor dogId={dogId} action={action} onChanged={onMovementsChanged} />
+          )}
 
           <DialogFooter>
             <Button

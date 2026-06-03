@@ -36,6 +36,21 @@ export type CareActionFrequency = 'DAILY' | 'EVERY_OTHER_DAY' | 'WEEKLY' | 'AS_N
 
 export type CareActionTimeOfDay = 'MORNING' | 'EVENING' | 'ANYTIME'
 
+export interface CareActionStepRecord {
+  id: string
+  careActionId: string
+  name: string
+  description: string | null
+  instructions: string | null
+  mediaKey: string | null
+  mediaContentType: string | null
+  mediaUrl: string | null
+  sortOrder: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 export interface CareActionRecord {
   id: string
   carePlanId: string
@@ -51,6 +66,35 @@ export interface CareActionRecord {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  steps: CareActionStepRecord[]
+}
+
+export interface CreateCareActionStepInput {
+  name: string
+  description?: string | null
+  instructions?: string | null
+  mediaKey?: string | null
+  mediaContentType?: string | null
+  sortOrder?: number
+}
+
+export interface UpdateCareActionStepInput extends Partial<CreateCareActionStepInput> {}
+
+export interface DailyCareActionStepRecord {
+  id: string
+  dailyCareActionId: string
+  careActionStepId: string
+  nameSnapshot: string
+  description: string | null
+  instructions: string | null
+  mediaKey: string | null
+  mediaContentType: string | null
+  mediaUrl: string | null
+  status: DailyCareActionStatus
+  completedAt: string | null
+  completedByUserId: string | null
+  notes: string | null
+  completedBy: UserSummary | null
 }
 
 export interface CarePlanPayload {
@@ -147,6 +191,8 @@ export interface DailyCareActionRecord {
   tolerance: Tolerance | null
   issueObserved: boolean
   completedBy: UserSummary | null
+  steps: DailyCareActionStepRecord[]
+  movementProgress: { completed: number; total: number } | null
 }
 
 export interface VoiceNoteRecord {
@@ -246,6 +292,27 @@ export interface DogsApi {
     dogId: string,
     actionId: string
   ): Promise<{ success: boolean; data: CareActionRecord }>
+  createCareActionStep(
+    dogId: string,
+    actionId: string,
+    input: CreateCareActionStepInput
+  ): Promise<{ success: boolean; data: CareActionStepRecord }>
+  updateCareActionStep(
+    dogId: string,
+    actionId: string,
+    stepId: string,
+    input: UpdateCareActionStepInput
+  ): Promise<{ success: boolean; data: CareActionStepRecord }>
+  deactivateCareActionStep(
+    dogId: string,
+    actionId: string,
+    stepId: string
+  ): Promise<{ success: boolean; data: CareActionStepRecord }>
+  updateDailyActionStep(
+    dogId: string,
+    stepId: string,
+    body: { status?: DailyCareActionStatus; notes?: string }
+  ): Promise<{ success: boolean; data: DailyCareActionStepRecord }>
   getCalendar(dogId: string, month: string): Promise<{ success: boolean; data: CalendarPayload }>
   previewJoin(code: string): Promise<{ success: boolean; data: JoinPreview }>
   joinByShareCode(shareCode: string): Promise<{ success: boolean; data: DogRecord; message?: string }>
@@ -362,6 +429,50 @@ export const dogsMethods = {
     return this.request<{ success: boolean; data: CareActionRecord }>(
       `/v1/dogs/${dogId}/care-plan/actions/${actionId}/deactivate`,
       { method: 'PATCH' }
+    )
+  },
+
+  async createCareActionStep(
+    this: ApiClient,
+    dogId: string,
+    actionId: string,
+    input: CreateCareActionStepInput
+  ) {
+    return this.request<{ success: boolean; data: CareActionStepRecord }>(
+      `/v1/dogs/${dogId}/care-plan/actions/${actionId}/steps`,
+      { method: 'POST', data: input }
+    )
+  },
+
+  async updateCareActionStep(
+    this: ApiClient,
+    dogId: string,
+    actionId: string,
+    stepId: string,
+    input: UpdateCareActionStepInput
+  ) {
+    return this.request<{ success: boolean; data: CareActionStepRecord }>(
+      `/v1/dogs/${dogId}/care-plan/actions/${actionId}/steps/${stepId}`,
+      { method: 'PATCH', data: input }
+    )
+  },
+
+  async deactivateCareActionStep(this: ApiClient, dogId: string, actionId: string, stepId: string) {
+    return this.request<{ success: boolean; data: CareActionStepRecord }>(
+      `/v1/dogs/${dogId}/care-plan/actions/${actionId}/steps/${stepId}/deactivate`,
+      { method: 'PATCH' }
+    )
+  },
+
+  async updateDailyActionStep(
+    this: ApiClient,
+    dogId: string,
+    stepId: string,
+    body: { status?: DailyCareActionStatus; notes?: string }
+  ) {
+    return this.request<{ success: boolean; data: DailyCareActionStepRecord }>(
+      `/v1/dogs/${dogId}/daily-action-steps/${stepId}`,
+      { method: 'PATCH', data: body }
     )
   },
 

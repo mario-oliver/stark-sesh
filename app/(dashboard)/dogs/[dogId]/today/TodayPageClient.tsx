@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
-import { ActionRow } from '@/components/care/ActionRow'
+import { ExerciseCard } from '@/components/care/ExerciseCard'
 import { DogPhoto } from '@/components/dog/DogPhoto'
 import { DogSubNav } from '@/components/dog/DogSubNav'
 import { VoiceRecordBar } from '@/components/voice/VoiceRecordBar'
@@ -152,7 +152,7 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
           </div>
           <p className="text-zinc-400 text-sm mt-1">{formatDisplayDate(payload.date)}</p>
           <p className="text-amber-400/90 text-sm mt-2">
-            {progress.completed} of {progress.total} care actions done
+            {progress.completed} of {progress.total} exercises done
           </p>
           {dailyLog.summary && (
             <p className="text-sm text-zinc-400 mt-3 border-l-2 border-amber-600 pl-3">{dailyLog.summary}</p>
@@ -164,13 +164,13 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
         {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
         <section className="mb-8">
-          <h2 className="text-xs uppercase tracking-widest text-zinc-500 mb-3">PT work today</h2>
+          <h2 className="text-xs uppercase tracking-widest text-zinc-500 mb-3">Exercises today</h2>
           <p className="text-xs text-zinc-600 mb-3">
-            Speak your update below — manual controls are fallback only.
+            Speak your update below — tap an exercise with movements to work through each step.
           </p>
           <ul className="space-y-3">
             {dailyLog.dailyCareActions.map(action => (
-              <ActionRow key={action.id} action={action} dogId={dogId} onUpdated={loadToday} />
+              <ExerciseCard key={action.id} action={action} dogId={dogId} onUpdated={loadToday} />
             ))}
           </ul>
         </section>

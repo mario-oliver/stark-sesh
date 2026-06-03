@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { ActionRow } from '@/components/care/ActionRow'
+import { ExerciseCard } from '@/components/care/ExerciseCard'
 import { useApiClient } from '@/hooks/use-api-client'
 import type { TodayPayload } from '@/lib/api/endpoints/dogs'
 import { formatDisplayDate } from '@/lib/care/display'
@@ -73,7 +73,7 @@ export function CalendarDayPanel({
       ) : (
         <ul className="space-y-3 mt-4">
           {dailyLog.dailyCareActions.map(action => (
-            <ActionRow
+            <ExerciseCard
               key={action.id}
               action={action}
               dogId={dogId}
