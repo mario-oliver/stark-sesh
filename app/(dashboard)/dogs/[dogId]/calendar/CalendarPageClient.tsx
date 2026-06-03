@@ -69,35 +69,35 @@ export function CalendarPageClient({
   }, [days, today])
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] text-zinc-100 pb-12">
+    <div className="min-h-screen bg-background text-foreground pb-12">
       <div className="max-w-lg mx-auto px-4 pt-6">
-        <Link href="/today" className="text-sm text-amber-400 hover:text-amber-300 underline">
+        <Link href="/today" className="text-sm text-primary hover:text-primary/80 underline">
           ← Home
         </Link>
 
         <header className="mt-4 mb-2">
           <h1 className="text-2xl font-semibold">Calendar</h1>
-          <p className="text-sm text-zinc-500 mt-1">Track care tasks over time</p>
+          <p className="text-sm text-muted-foreground mt-1">Track care tasks over time</p>
         </header>
 
         <DogSubNav dogId={dogId} />
 
-        <div className="flex flex-wrap gap-4 text-xs text-zinc-500 mb-4">
+        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-4">
           <span className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-emerald-500" /> All done
+            <span className="size-2 rounded-full bg-primary" /> All done
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-amber-500" /> Partial
+            <span className="size-2 rounded-full bg-primary/60" /> Partial
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-zinc-600" /> Missed
+            <span className="size-2 rounded-full bg-muted-foreground" /> Missed
           </span>
         </div>
 
         <div className="relative">
           {loading && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0c0c0c]/60 rounded-lg">
-              <p className="text-sm text-zinc-500">Loading…</p>
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 rounded-lg">
+              <p className="text-sm text-muted-foreground">Loading…</p>
             </div>
           )}
           <Calendar
@@ -110,9 +110,9 @@ export function CalendarPageClient({
             }}
             modifiers={modifiers}
             modifiersClassNames={{
-              complete: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-emerald-500',
-              partial: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-amber-500',
-              pendingPast: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-zinc-600'
+              complete: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-primary',
+              partial: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-primary/60',
+              pendingPast: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-muted-foreground'
             }}
             className="mx-auto"
           />
@@ -127,7 +127,7 @@ export function CalendarPageClient({
         )}
 
         {selectedDate && dayMap.has(selectedDate) && (
-          <p className="text-xs text-zinc-600 mt-2 text-center">
+          <p className="text-xs text-muted-foreground mt-2 text-center">
             {dayMap.get(selectedDate)!.completedCount} of {dayMap.get(selectedDate)!.totalActions}{' '}
             tasks done
           </p>

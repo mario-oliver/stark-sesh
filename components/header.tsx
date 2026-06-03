@@ -6,45 +6,48 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const NavBar = () => {
   return (
-    <header className="sticky top-0 z-50 flex justify-between items-center px-6 sm:px-8 h-16 border-b border-zinc-800 bg-[#0c0c0c]/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 flex justify-between items-center px-6 sm:px-8 h-16 border-b border-border bg-background/80 backdrop-blur-sm">
       <Link
         href="/"
-        className="text-lg font-semibold text-zinc-100 hover:text-primary-brand transition-colors"
+        className="text-lg font-semibold text-primary hover:text-primary/80 transition-colors"
       >
         Stark Health
       </Link>
-      <nav className="flex items-center gap-3">
+      <nav className="flex items-center gap-2 sm:gap-3">
+        <ModeToggle />
         <SignedOut>
           <SignInButton forceRedirectUrl="/today">
-            <button className="text-zinc-400 hover:text-zinc-200 text-sm font-medium">
+            <Button variant="ghost" size="sm">
               Sign in
-            </button>
+            </Button>
           </SignInButton>
           <SignUpButton forceRedirectUrl="/today">
-            <button className="bg-primary-brand hover:bg-primary-brand-hover text-white rounded-full font-medium text-sm h-9 px-4 cursor-pointer transition-colors">
+            <Button size="sm" className="rounded-full">
               Sign up
-            </button>
+            </Button>
           </SignUpButton>
         </SignedOut>
         <SignedIn>
           <Link
             href="/today"
-            className="text-zinc-400 hover:text-zinc-200 text-sm font-medium"
+            className="text-muted-foreground hover:text-accent-foreground hover:bg-accent/60 rounded-md px-2 py-1 text-sm font-medium transition-colors"
           >
             Today
           </Link>
           <Link
             href="/tasks"
-            className="text-zinc-400 hover:text-zinc-200 text-sm font-medium hidden sm:inline"
+            className="text-muted-foreground hover:text-accent-foreground hover:bg-accent/60 rounded-md px-2 py-1 text-sm font-medium hidden sm:inline transition-colors"
           >
             Tasks
           </Link>
           <Link
             href="/calendar"
-            className="text-zinc-400 hover:text-zinc-200 text-sm font-medium hidden sm:inline"
+            className="text-muted-foreground hover:text-accent-foreground hover:bg-accent/60 rounded-md px-2 py-1 text-sm font-medium hidden sm:inline transition-colors"
           >
             Calendar
           </Link>

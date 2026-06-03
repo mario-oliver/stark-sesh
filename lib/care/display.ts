@@ -53,9 +53,9 @@ export const STATUS_LABELS: Record<DailyCareActionStatus, string> = {
 }
 
 export const STATUS_COLORS: Record<DailyCareActionStatus, string> = {
-  PENDING: 'bg-zinc-700 text-zinc-300',
-  COMPLETED: 'bg-emerald-900/60 text-emerald-300',
-  SKIPPED: 'bg-zinc-800 text-zinc-400',
-  PARTIALLY_COMPLETED: 'bg-amber-900/50 text-amber-300',
-  UNCLEAR: 'bg-orange-900/50 text-orange-300'
+  PENDING: 'bg-secondary text-secondary-foreground',
+  COMPLETED: 'bg-primary/15 text-primary ring-1 ring-primary/20',
+  SKIPPED: 'bg-muted text-muted-foreground',
+  PARTIALLY_COMPLETED: 'bg-accent text-accent-foreground',
+  UNCLEAR: 'bg-destructive/10 text-destructive'
 }

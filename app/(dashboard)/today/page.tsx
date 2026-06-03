@@ -33,7 +33,7 @@ export default function TodayRedirectPage() {
   }, [apiClient, isReady, isLoaded, isSignedIn, router])
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] flex items-center justify-center text-zinc-500">
+    <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
       Opening Stark&apos;s care log…
     </div>
   )

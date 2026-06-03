@@ -3,6 +3,7 @@
 import { Mic, Square } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { blobToWav } from '@/lib/audio-to-wav'
+import { Button } from '@/components/ui/button'
 
 type VoiceRecordBarProps = {
   disabled?: boolean
@@ -52,28 +53,31 @@ export function VoiceRecordBar({
   }, [])
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#0c0c0c]/95 border-t border-zinc-800 flex flex-col items-center gap-2 pt-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-background/95 border-t border-border flex flex-col items-center gap-2 pt-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-50">
       {!isRecording ? (
-        <button
+        <Button
           type="button"
+          size="record"
           onClick={() => void startRecording()}
           disabled={disabled || isProcessing}
-          className="flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-amber-500 active:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-black transition-colors touch-target shadow-lg"
+          className="touch-target shadow-lg ring-4 ring-primary/20"
           title="Record care update"
         >
-          <Mic className="w-10 h-10 sm:w-12 sm:h-12" />
-        </button>
+          <Mic />
+        </Button>
       ) : (
-        <button
+        <Button
           type="button"
+          variant="destructive"
+          size="record"
           onClick={stopRecording}
-          className="flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-red-500 active:bg-red-400 text-white transition-colors animate-pulse touch-target shadow-lg"
+          className="touch-target shadow-lg animate-pulse [&_svg:not([class*='size-'])]:size-8 sm:[&_svg:not([class*='size-'])]:size-10"
           title="Stop recording"
         >
-          <Square className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" />
-        </button>
+          <Square fill="currentColor" />
+        </Button>
       )}
-      <p className="text-sm text-zinc-500 text-center max-w-sm">
+      <p className="text-sm text-muted-foreground text-center max-w-sm">
         {isRecording
           ? 'Recording… Tap to stop and send.'
           : isProcessing

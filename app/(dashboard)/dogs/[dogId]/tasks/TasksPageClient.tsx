@@ -29,6 +29,7 @@ import {
   localDateString,
   shiftDateString
 } from '@/lib/care/display'
+import { cn } from '@/lib/utils'
 
 type Tab = 'routine' | 'schedule'
 
@@ -112,57 +113,58 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] text-zinc-100 pb-12">
+    <div className="min-h-screen bg-background text-foreground pb-12">
       <div className="max-w-lg mx-auto px-4 pt-6">
-        <Link href="/today" className="text-sm text-amber-400 hover:text-amber-300 underline">
+        <Link href="/today" className="text-sm text-primary hover:text-primary/80 underline">
           ← Home
         </Link>
 
         <header className="mt-4 mb-2">
           <h1 className="text-2xl font-semibold">Exercises</h1>
-          <p className="text-sm text-zinc-500 mt-1">Manage your care routine and daily schedule</p>
+          <p className="text-sm text-muted-foreground mt-1">Manage your care routine and daily schedule</p>
         </header>
 
         <DogSubNav dogId={dogId} />
 
         <div className="flex gap-2 mb-6">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setTab('routine')}
-            className={`text-sm px-3 py-1.5 rounded-full border ${
-              tab === 'routine'
-                ? 'border-amber-600 bg-amber-600/10 text-amber-400'
-                : 'border-zinc-800 text-zinc-500 hover:text-zinc-300'
-            }`}
+            className={cn(
+              'rounded-full',
+              tab === 'routine' && 'border-primary bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary'
+            )}
           >
             Routine
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setTab('schedule')}
-            className={`text-sm px-3 py-1.5 rounded-full border ${
-              tab === 'schedule'
-                ? 'border-amber-600 bg-amber-600/10 text-amber-400'
-                : 'border-zinc-800 text-zinc-500 hover:text-zinc-300'
-            }`}
+            className={cn(
+              'rounded-full',
+              tab === 'schedule' && 'border-primary bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary'
+            )}
           >
             Daily schedule
-          </button>
+          </Button>
         </div>
 
-        {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
+        {error && <p className="text-sm text-destructive mb-4">{error}</p>}
 
         {tab === 'routine' && (
           <>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-widest text-zinc-500">Care plan</p>
-                <p className="text-sm text-zinc-300 mt-0.5">{plan?.name ?? '…'}</p>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">Care plan</p>
+                <p className="text-sm text-foreground mt-0.5">{plan?.name ?? '…'}</p>
               </div>
               <Button
                 type="button"
                 size="sm"
-                className="bg-amber-600 hover:bg-amber-500 text-black"
                 onClick={() => {
                   setEditingAction(null)
                   setFormOpen(true)
@@ -173,7 +175,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
             </div>
 
             {loading ? (
-              <p className="text-zinc-500">Loading routine…</p>
+              <p className="text-muted-foreground">Loading routine…</p>
             ) : plan && plan.actions.length > 0 ? (
               <ul className="space-y-3">
                 {plan.actions.map(action => (
@@ -189,12 +191,12 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
                 ))}
               </ul>
             ) : (
-              <div className="border border-dashed border-zinc-800 rounded-lg p-8 text-center">
-                <p className="text-zinc-500">No exercises in your routine yet.</p>
+              <div className="border border-dashed border-border rounded-lg p-8 text-center">
+                <p className="text-muted-foreground">No exercises in your routine yet.</p>
                 <Button
                   type="button"
                   size="sm"
-                  className="mt-4 bg-amber-600 hover:bg-amber-500 text-black"
+                  className="mt-4"
                   onClick={() => {
                     setEditingAction(null)
                     setFormOpen(true)
@@ -210,34 +212,36 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
         {tab === 'schedule' && (
           <>
             <div className="flex items-center justify-between mb-4">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setScheduleDate(d => shiftDateString(d, -1))}
-                className="p-2 text-zinc-500 hover:text-zinc-200"
                 aria-label="Previous day"
               >
                 <ChevronLeft className="size-5" />
-              </button>
+              </Button>
               <div className="text-center">
                 <p className="text-sm font-medium">{formatDisplayDate(scheduleDate)}</p>
                 {schedulePayload && (
-                  <p className="text-xs text-amber-400/90 mt-0.5">
+                  <p className="text-xs text-primary mt-0.5">
                     {schedulePayload.progress.completed} of {schedulePayload.progress.total} done
                   </p>
                 )}
               </div>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setScheduleDate(d => shiftDateString(d, 1))}
-                className="p-2 text-zinc-500 hover:text-zinc-200"
                 aria-label="Next day"
               >
                 <ChevronRight className="size-5" />
-              </button>
+              </Button>
             </div>
 
             {scheduleLoading ? (
-              <p className="text-zinc-500">Loading schedule…</p>
+              <p className="text-muted-foreground">Loading schedule…</p>
             ) : schedulePayload ? (
               schedulePayload.dailyLog.dailyCareActions.length > 0 ? (
                 <ul className="space-y-3">
@@ -251,7 +255,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-zinc-500 text-sm">No tasks scheduled for this day.</p>
+                <p className="text-muted-foreground text-sm">No tasks scheduled for this day.</p>
               )
             ) : null}
           </>
@@ -280,21 +284,16 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
       />
 
       <Dialog open={!!deactivatingAction} onOpenChange={open => !open && setDeactivatingAction(null)}>
-        <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Remove exercise?</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription>
               &ldquo;{deactivatingAction?.name}&rdquo; will be removed from future days. Past records
               are kept.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setDeactivatingAction(null)}
-              className="border-zinc-700"
-            >
+            <Button type="button" variant="outline" onClick={() => setDeactivatingAction(null)}>
               Cancel
             </Button>
             <Button

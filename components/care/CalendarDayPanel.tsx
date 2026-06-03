@@ -5,6 +5,7 @@ import { ExerciseCard } from '@/components/care/ExerciseCard'
 import { useApiClient } from '@/hooks/use-api-client'
 import type { TodayPayload } from '@/lib/api/endpoints/dogs'
 import { formatDisplayDate } from '@/lib/care/display'
+import { Button } from '@/components/ui/button'
 
 export function CalendarDayPanel({
   dogId,
@@ -44,16 +45,16 @@ export function CalendarDayPanel({
   }
 
   if (loading) {
-    return <p className="text-sm text-zinc-500 py-4">Loading tasks…</p>
+    return <p className="text-sm text-muted-foreground py-4">Loading tasks…</p>
   }
 
   if (error && !payload) {
     return (
       <div className="py-4">
-        <p className="text-sm text-red-400">{error}</p>
-        <button type="button" onClick={() => void load()} className="text-sm text-amber-400 underline mt-2">
+        <p className="text-sm text-destructive">{error}</p>
+        <Button type="button" variant="link" onClick={() => void load()} className="mt-2 h-auto px-0">
           Retry
-        </button>
+        </Button>
       </div>
     )
   }
@@ -63,13 +64,13 @@ export function CalendarDayPanel({
   const { dailyLog, progress } = payload
 
   return (
-    <div className="mt-4 border-t border-zinc-800 pt-4">
-      <h3 className="text-sm font-medium text-zinc-200">{formatDisplayDate(date)}</h3>
-      <p className="text-xs text-amber-400/90 mt-1">
+    <div className="mt-4 border-t border-border pt-4">
+      <h3 className="text-sm font-medium text-foreground">{formatDisplayDate(date)}</h3>
+      <p className="text-xs text-primary mt-1">
         {progress.completed} of {progress.total} done
       </p>
       {dailyLog.dailyCareActions.length === 0 ? (
-        <p className="text-sm text-zinc-500 mt-4">No tasks scheduled for this day.</p>
+        <p className="text-sm text-muted-foreground mt-4">No tasks scheduled for this day.</p>
       ) : (
         <ul className="space-y-3 mt-4">
           {dailyLog.dailyCareActions.map(action => (

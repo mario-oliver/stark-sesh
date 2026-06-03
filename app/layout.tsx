@@ -6,6 +6,7 @@ import { Toaster } from 'sonner'
 
 import './globals.css'
 import NavBar from '@/components/header'
+import { ThemeProvider } from '@/components/theme-provider'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -37,12 +38,19 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <NavBar />
-      <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0c0c0c]`}>
-          {children}
-          <Analytics />
-          <Toaster richColors position="top-center" />
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <NavBar />
+            {children}
+            <Analytics />
+            <Toaster richColors position="top-center" />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

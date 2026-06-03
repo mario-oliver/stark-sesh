@@ -1,0 +1,49 @@
+---
+description: Use shadcn semantic colors and components in stark-sesh UI
+globs: stark-sesh/**/*.tsx
+alwaysApply: false
+---
+
+# Shadcn styling
+
+Use shadcn semantic tokens and components. Do not hardcode palette classes.
+
+## Do not use
+
+- `bg-[#…]`, `bg-black`, `bg-white` (except shadcn overlay defaults in `components/ui/`)
+- `bg-zinc-*`, `text-zinc-*`, `border-zinc-*`, `bg-gray-*`, `text-gray-*`
+- `bg-amber-*`, `text-amber-*` for CTAs or accents (use `primary` tokens)
+- Color overrides on shadcn primitives (`Input`, `DialogContent`, `Select`, `Button`)
+
+## Use instead
+
+| Instead of | Use |
+|------------|-----|
+| `bg-[#0c0c0c]` | `bg-background` |
+| `text-zinc-100/200` | `text-foreground` |
+| `text-zinc-400/500/600` | `text-muted-foreground` |
+| `border-zinc-700/800` | `border-border` |
+| `bg-zinc-900/30` | `bg-card` or `bg-muted/40` |
+| `bg-amber-600` CTAs | `<Button>` (default → `bg-primary`) |
+| `text-red-400` errors | `text-destructive` |
+| Secondary surfaces | `bg-secondary text-secondary-foreground` |
+
+## Prefer shadcn components
+
+Use `<Button variant="outline|secondary|ghost">`, `<Badge>`, `<Input>`, `<Dialog>` without custom color classes. Fix theme tokens in `globals.css` if contrast is wrong.
+
+## Example
+
+```tsx
+// BAD
+<li className="border border-zinc-800 rounded-lg p-3 bg-zinc-900/30">
+  <p className="text-sm text-zinc-300">Note</p>
+  <button className="bg-amber-600 text-black">Save</button>
+</li>
+
+// GOOD
+<li className="border border-border rounded-lg p-3 bg-card">
+  <p className="text-sm text-foreground">Note</p>
+  <Button>Save</Button>
+</li>
+```

@@ -27,7 +27,7 @@ function MovementMediaPreview({ step }: { step: CareActionStepRecord }) {
       <video
         src={step.mediaUrl}
         controls
-        className="mt-2 w-full max-h-32 rounded border border-zinc-800"
+        className="mt-2 w-full max-h-32 rounded border border-border"
       />
     )
   }
@@ -36,7 +36,7 @@ function MovementMediaPreview({ step }: { step: CareActionStepRecord }) {
     <img
       src={step.mediaUrl}
       alt=""
-      className="mt-2 w-full max-h-32 object-cover rounded border border-zinc-800"
+      className="mt-2 w-full max-h-32 object-cover rounded border border-border"
     />
   )
 }
@@ -109,10 +109,10 @@ export function MovementEditor({
   }
 
   return (
-    <div className="border-t border-zinc-800 pt-4 mt-4 space-y-4">
+    <div className="border-t border-border pt-4 mt-4 space-y-4">
       <div>
-        <h3 className="text-sm font-medium text-zinc-200">Movements</h3>
-        <p className="text-xs text-zinc-500 mt-1">
+        <h3 className="text-sm font-medium text-foreground">Movements</h3>
+        <p className="text-xs text-muted-foreground mt-1">
           Optional steps inside this exercise (e.g. individual stretches).
         </p>
       </div>
@@ -122,61 +122,68 @@ export function MovementEditor({
           {steps.map(step => (
             <li
               key={step.id}
-              className="border border-zinc-800 rounded-lg p-3 bg-zinc-900/30 text-sm"
+              className="border border-border rounded-lg p-3 bg-card text-sm"
             >
-              <p className="font-medium text-zinc-100">{step.name}</p>
+              <p className="font-medium text-foreground">{step.name}</p>
               {step.description && (
-                <p className="text-zinc-400 mt-1 text-xs">{step.description}</p>
+                <p className="text-muted-foreground mt-1 text-xs">{step.description}</p>
               )}
               <MovementMediaPreview step={step} />
               <div className="flex flex-wrap gap-2 mt-2">
-                <label className="text-xs px-2 py-1 rounded border border-zinc-700 text-zinc-400 hover:text-zinc-200 cursor-pointer">
-                  {uploadingStepId === step.id ? 'Uploading…' : 'Photo / video'}
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
-                    className="hidden"
-                    disabled={uploadingStepId === step.id}
-                    onChange={e => {
-                      const file = e.target.files?.[0]
-                      if (file) void handleMediaUpload(step.id, file)
-                      e.target.value = ''
-                    }}
-                  />
-                </label>
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="xs"
+                  disabled={uploadingStepId === step.id}
+                  onClick={() => document.getElementById(`movement-media-${step.id}`)?.click()}
+                >
+                  {uploadingStepId === step.id ? 'Uploading…' : 'Photo / video'}
+                </Button>
+                <input
+                  id={`movement-media-${step.id}`}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+                  className="sr-only"
+                  disabled={uploadingStepId === step.id}
+                  onChange={e => {
+                    const file = e.target.files?.[0]
+                    if (file) void handleMediaUpload(step.id, file)
+                    e.target.value = ''
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
                   disabled={busy}
                   onClick={() => void handleRemove(step.id)}
-                  className="text-xs px-2 py-1 rounded border border-zinc-800 text-zinc-600 hover:text-red-400"
+                  className="text-muted-foreground hover:text-destructive"
                 >
                   Remove
-                </button>
+                </Button>
               </div>
             </li>
           ))}
         </ul>
       )}
 
-      <div className="space-y-2 border border-zinc-800 rounded-lg p-3">
+      <div className="space-y-2 border border-border rounded-lg p-3">
         <Label htmlFor={`movement-name-${action.id}`}>New movement</Label>
         <Input
           id={`movement-name-${action.id}`}
           value={draft.name}
           onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
-          className="bg-zinc-900 border-zinc-700"
           placeholder="Front leg stretch"
         />
         <Input
           value={draft.description}
           onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
-          className="bg-zinc-900 border-zinc-700"
           placeholder="Description (optional)"
         />
         <Textarea
           value={draft.instructions}
           onChange={e => setDraft(d => ({ ...d, instructions: e.target.value }))}
-          className="bg-zinc-900 border-zinc-700 min-h-16"
+          className="min-h-16"
           placeholder="Instructions (optional)"
         />
         <Button
@@ -184,13 +191,12 @@ export function MovementEditor({
           size="sm"
           disabled={busy || !draft.name.trim()}
           onClick={() => void handleAdd()}
-          className="bg-amber-600 hover:bg-amber-500 text-black"
         >
           Add movement
         </Button>
       </div>
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   )
 }

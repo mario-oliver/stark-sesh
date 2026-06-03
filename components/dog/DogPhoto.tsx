@@ -5,12 +5,13 @@ import { useApiClient } from '@/hooks/use-api-client'
 import { DEFAULT_DOG_PHOTO_URL } from '@/lib/default-dog-photo'
 import { cn } from '@/lib/utils'
 
-type Size = 'md' | 'lg' | 'xl'
+type Size = 'md' | 'lg' | 'xl' | 'hero'
 
 const sizeClasses: Record<Size, string> = {
   md: 'size-16',
   lg: 'size-24',
-  xl: 'size-32'
+  xl: 'size-32',
+  hero: 'w-full aspect-[4/5] max-h-[min(72vh,420px)]'
 }
 
 type Props = {
@@ -58,32 +59,28 @@ export function DogPhoto({ dogId, photoUrl, name, size = 'lg', className }: Prop
 
   const fallbackSrc = DEFAULT_DOG_PHOTO_URL
 
+  const isHero = size === 'hero'
+  const shapeClass = isHero ? 'rounded-4xl' : 'rounded-full'
+
   if (!src || failed) {
     return (
       <div
         className={cn(
           sizeClasses[size],
-          'rounded-full overflow-hidden border border-zinc-700 shrink-0 bg-zinc-900',
+          shapeClass,
+          'overflow-hidden border border-border shrink-0 bg-muted',
           className
         )}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={fallbackSrc}
-          alt={`${name} profile`}
-          className="size-full object-cover"
-        />
+        <img src={fallbackSrc} alt={`${name} profile`} className="size-full object-cover" />
       </div>
     )
   }
 
   return (
     <div
-      className={cn(
-        sizeClasses[size],
-        'rounded-full overflow-hidden border border-zinc-700 shrink-0 bg-zinc-900',
-        className
-      )}
+      className={cn(sizeClasses[size], shapeClass, 'overflow-hidden border border-border shrink-0 bg-muted', className)}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

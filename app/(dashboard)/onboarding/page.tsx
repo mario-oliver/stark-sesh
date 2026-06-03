@@ -95,31 +95,31 @@ export default function OnboardingPage() {
 
   if (!isLoaded || checkingExisting) {
     return (
-      <div className="min-h-screen bg-[#0c0c0c] flex items-center justify-center text-zinc-500">
+      <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
         Loading…
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] text-zinc-100">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-lg mx-auto px-4 py-10">
-        <p className="text-xs uppercase tracking-widest text-zinc-500">Welcome to Stark Health</p>
+        <p className="text-xs uppercase tracking-widest text-muted-foreground">Welcome to Stark Health</p>
         <h1 className="text-2xl font-semibold mt-2">
           {step === 1 ? 'Add your dog' : 'Your care routine'}
         </h1>
-        <p className="text-zinc-400 text-sm mt-2">
+        <p className="text-muted-foreground text-sm mt-2">
           {step === 1
             ? 'We’ll attach this dog to your account so you can track PT and daily care.'
             : 'We’ll start you on a mobility and strength plan you can adjust later.'}
         </p>
 
         <div className="flex gap-2 mt-6" aria-hidden>
-          <span className={`h-1 flex-1 rounded-full ${step >= 1 ? 'bg-amber-500' : 'bg-zinc-800'}`} />
-          <span className={`h-1 flex-1 rounded-full ${step >= 2 ? 'bg-amber-500' : 'bg-zinc-800'}`} />
+          <span className={`h-1 flex-1 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`} />
+          <span className={`h-1 flex-1 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
         </div>
 
-        {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
+        {error && <p className="text-destructive text-sm mt-4">{error}</p>}
 
         {step === 1 && (
           <form
@@ -139,11 +139,12 @@ export default function OnboardingPage() {
             }}
           >
             <div className="flex flex-col items-center gap-3">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 disabled={photoUploading}
                 onClick={() => fileInputRef.current?.click()}
-                className="relative size-36 rounded-full border-2 border-dashed border-zinc-700 bg-zinc-900/60 overflow-hidden hover:border-amber-600/60 transition-colors disabled:opacity-60"
+                className="relative size-36 rounded-full border-2 border-dashed bg-muted/60 overflow-hidden hover:border-primary/60 h-auto p-0"
               >
                 {photoPreview ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -154,13 +155,13 @@ export default function OnboardingPage() {
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <span className="text-xs text-zinc-500 px-2 text-center leading-tight">
+                  <span className="text-xs text-muted-foreground px-2 text-center leading-tight">
                     {photoUploading ? 'Uploading…' : 'Add photo'}
                     <br />
-                    <span className="text-zinc-600">(optional)</span>
+                    <span className="text-muted-foreground/70">(optional)</span>
                   </span>
                 )}
-              </button>
+              </Button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -169,9 +170,11 @@ export default function OnboardingPage() {
                 onChange={e => void handlePhotoChange(e.target.files?.[0])}
               />
               {photoPreview && (
-                <button
+                <Button
                   type="button"
-                  className="text-xs text-zinc-500 underline"
+                  variant="link"
+                  size="xs"
+                  className="h-auto px-0 text-muted-foreground"
                   onClick={() => {
                     setPhotoPreview(null)
                     setPhotoKey(null)
@@ -179,41 +182,35 @@ export default function OnboardingPage() {
                   }}
                 >
                   Remove photo
-                </button>
+                </Button>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dog-name" className="text-zinc-300">
-                Name <span className="text-amber-500">*</span>
+              <Label htmlFor="dog-name">
+                Name <span className="text-primary">*</span>
               </Label>
               <Input
                 id="dog-name"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="e.g. Stark"
-                className="bg-zinc-900 border-zinc-700 text-zinc-100"
                 autoFocus
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dog-breed" className="text-zinc-300">
-                Breed
-              </Label>
+              <Label htmlFor="dog-breed">Breed</Label>
               <Input
                 id="dog-breed"
                 value={breed}
                 onChange={e => setBreed(e.target.value)}
                 placeholder="Optional"
-                className="bg-zinc-900 border-zinc-700 text-zinc-100"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dog-age" className="text-zinc-300">
-                Age (years)
-              </Label>
+              <Label htmlFor="dog-age">Age (years)</Label>
               <Input
                 id="dog-age"
                 type="number"
@@ -222,21 +219,16 @@ export default function OnboardingPage() {
                 value={age}
                 onChange={e => setAge(e.target.value)}
                 placeholder="Optional"
-                className="bg-zinc-900 border-zinc-700 text-zinc-100"
               />
             </div>
 
-            <Button
-              type="submit"
-              disabled={photoUploading}
-              className="w-full bg-amber-600 hover:bg-amber-500 text-black"
-            >
+            <Button type="submit" disabled={photoUploading} className="w-full">
               Continue
             </Button>
 
-            <p className="text-center text-sm text-zinc-500 pt-2">
+            <p className="text-center text-sm text-muted-foreground pt-2">
               Have a share code?{' '}
-              <Link href="/join" className="text-amber-400 underline hover:text-amber-300">
+              <Link href="/join" className="text-primary underline hover:text-primary/80">
                 Join an existing dog
               </Link>
             </p>
@@ -245,9 +237,9 @@ export default function OnboardingPage() {
 
         {step === 2 && (
           <div className="mt-8">
-            <div className="flex items-center gap-4 p-4 rounded-lg border border-zinc-800 bg-zinc-900/40">
+            <div className="flex items-center gap-4 p-4 rounded-lg border border-border bg-card">
               {photoPreview ? (
-                <div className="relative size-20 rounded-full overflow-hidden shrink-0 border border-zinc-700">
+                <div className="relative size-20 rounded-full overflow-hidden shrink-0 border border-border">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photoPreview}
@@ -257,21 +249,21 @@ export default function OnboardingPage() {
                   />
                 </div>
               ) : (
-                <div className="size-20 rounded-full bg-zinc-800 flex items-center justify-center text-xl font-medium text-zinc-400 shrink-0">
+                <div className="size-20 rounded-full bg-muted flex items-center justify-center text-xl font-medium text-muted-foreground shrink-0">
                   {name.trim().charAt(0).toUpperCase() || '?'}
                 </div>
               )}
               <div>
                 <p className="font-medium">{name.trim()}</p>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-muted-foreground">
                   {[breed.trim(), age.trim() ? `${age} yrs` : null].filter(Boolean).join(' · ') ||
                     'Care profile'}
                 </p>
               </div>
             </div>
 
-            <h2 className="text-sm font-medium text-zinc-300 mt-8">{DEFAULT_ROUTINE_NAME}</h2>
-            <p className="text-xs text-zinc-500 mt-1">
+            <h2 className="text-sm font-medium text-foreground mt-8">{DEFAULT_ROUTINE_NAME}</h2>
+            <p className="text-xs text-muted-foreground mt-1">
               Stretch, strength, and mobility — the same structure used for rehab-focused home PT.
             </p>
 
@@ -279,13 +271,13 @@ export default function OnboardingPage() {
               {DEFAULT_ROUTINE_ITEMS.map(item => (
                 <li
                   key={item.name}
-                  className="flex justify-between gap-3 border border-zinc-800 rounded-lg px-3 py-2.5 bg-zinc-900/30 text-sm"
+                  className="flex justify-between gap-3 border border-border rounded-lg px-3 py-2.5 bg-card text-sm"
                 >
                   <div>
-                    <p className="text-zinc-200">{item.name}</p>
-                    <p className="text-xs text-zinc-500">{item.category}</p>
+                    <p className="text-foreground">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">{item.category}</p>
                   </div>
-                  <p className="text-xs text-zinc-500 text-right shrink-0">{item.frequency}</p>
+                  <p className="text-xs text-muted-foreground text-right shrink-0">{item.frequency}</p>
                 </li>
               ))}
             </ul>
@@ -294,7 +286,7 @@ export default function OnboardingPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 border-zinc-700 text-zinc-300"
+                className="flex-1"
                 disabled={busy}
                 onClick={() => setStep(1)}
               >
@@ -302,7 +294,7 @@ export default function OnboardingPage() {
               </Button>
               <Button
                 type="button"
-                className="flex-1 bg-amber-600 hover:bg-amber-500 text-black"
+                className="flex-1"
                 disabled={busy || photoUploading}
                 onClick={() => void handleCreate()}
               >

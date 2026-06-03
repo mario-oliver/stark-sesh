@@ -18,37 +18,37 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "p-3 [--cell-size:2.5rem] rounded-lg border border-zinc-800 bg-zinc-900/40",
+        "p-3 [--cell-size:2.5rem] rounded-lg border border-border bg-card",
         className
       )}
       classNames={{
         months: "flex flex-col gap-4",
         month: "flex flex-col gap-4",
         month_caption: "flex justify-center pt-1 relative items-center w-full",
-        caption_label: "text-sm font-medium text-zinc-200",
+        caption_label: "text-sm font-medium text-foreground",
         nav: "flex items-center gap-1",
         button_previous: cn(
           buttonVariants({ variant: "ghost" }),
-          "absolute left-1 size-8 p-0 text-zinc-400 hover:text-zinc-100"
+          "absolute left-1 size-8 p-0 text-muted-foreground hover:text-foreground"
         ),
         button_next: cn(
           buttonVariants({ variant: "ghost" }),
-          "absolute right-1 size-8 p-0 text-zinc-400 hover:text-zinc-100"
+          "absolute right-1 size-8 p-0 text-muted-foreground hover:text-foreground"
         ),
         month_grid: "w-full border-collapse",
         weekdays: "flex",
-        weekday: "text-zinc-500 rounded-md flex-1 font-normal text-[0.8rem] select-none",
+        weekday: "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] select-none",
         week: "flex w-full mt-2",
         day: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
         day_button: cn(
           buttonVariants({ variant: "ghost" }),
-          "size-9 p-0 font-normal text-zinc-300 hover:bg-zinc-800 aria-selected:opacity-100"
+          "size-9 p-0 font-normal text-foreground hover:bg-accent aria-selected:opacity-100"
         ),
         selected:
-          "bg-amber-600/20 text-amber-300 hover:bg-amber-600/30 focus:bg-amber-600/30",
-        today: "bg-zinc-800 text-amber-400",
-        outside: "text-zinc-600 opacity-50",
-        disabled: "text-zinc-600 opacity-50",
+          "bg-primary/20 text-primary hover:bg-primary/30 focus:bg-primary/30",
+        today: "bg-accent text-primary",
+        outside: "text-muted-foreground opacity-50",
+        disabled: "text-muted-foreground opacity-50",
         hidden: "invisible",
         ...classNames
       }}
@@ -83,8 +83,8 @@ function CalendarDayButton({
       size="icon"
       data-day={day.date.toLocaleDateString()}
       className={cn(
-        "size-9 p-0 font-normal text-zinc-300 hover:bg-zinc-800",
-        modifiers.selected && "bg-amber-600/20 text-amber-300 hover:bg-amber-600/30",
+        "size-9 p-0 font-normal text-foreground hover:bg-accent",
+        modifiers.selected && "bg-primary/20 text-primary hover:bg-primary/30",
         className
       )}
       {...props}

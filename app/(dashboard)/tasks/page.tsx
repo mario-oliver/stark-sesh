@@ -33,7 +33,7 @@ function DogRedirectPage({ path }: { path: 'tasks' | 'calendar' }) {
   }, [apiClient, isReady, isLoaded, isSignedIn, path, router])
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] flex items-center justify-center text-zinc-500">
+    <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
       Loading…
     </div>
   )

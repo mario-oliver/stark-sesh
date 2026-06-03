@@ -69,53 +69,47 @@ export default function JoinPage() {
 
   if (!isLoaded || !isSignedIn) {
     return (
-      <div className="min-h-screen bg-[#0c0c0c] flex items-center justify-center text-zinc-500">
+      <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
         Loading…
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] text-zinc-100">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-lg mx-auto px-4 py-10">
-        <Link href="/today" className="text-sm text-amber-400 underline">
+        <Link href="/today" className="text-sm text-primary underline">
           ← Back
         </Link>
 
-        <p className="text-xs uppercase tracking-widest text-zinc-500 mt-6">Join a care log</p>
+        <p className="text-xs uppercase tracking-widest text-muted-foreground mt-6">Join a care log</p>
         <h1 className="text-2xl font-semibold mt-2">
           {step === 'enter' ? 'Enter share code' : 'Confirm join'}
         </h1>
-        <p className="text-zinc-400 text-sm mt-2">
+        <p className="text-muted-foreground text-sm mt-2">
           {step === 'enter'
             ? 'Ask the dog owner for their share code to join as a caregiver.'
             : 'You will be added as a caregiver with full access to this care log.'}
         </p>
 
-        {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
+        {error && <p className="text-destructive text-sm mt-4">{error}</p>}
 
         {step === 'enter' && (
           <form className="mt-8 space-y-6" onSubmit={e => void handlePreview(e)}>
             <div className="space-y-2">
-              <Label htmlFor="share-code" className="text-zinc-300">
-                Share code
-              </Label>
+              <Label htmlFor="share-code">Share code</Label>
               <Input
                 id="share-code"
                 value={code}
                 onChange={e => setCode(e.target.value.toUpperCase())}
                 placeholder="XXXX-XXXX"
-                className="bg-zinc-900 border-zinc-700 text-zinc-100 font-mono tracking-widest uppercase"
+                className="font-mono tracking-widest uppercase"
                 autoFocus
                 autoComplete="off"
                 spellCheck={false}
               />
             </div>
-            <Button
-              type="submit"
-              disabled={busy || !isReady}
-              className="w-full bg-amber-600 hover:bg-amber-500 text-black"
-            >
+            <Button type="submit" disabled={busy || !isReady} className="w-full">
               {busy ? 'Looking up…' : 'Continue'}
             </Button>
           </form>
@@ -123,7 +117,7 @@ export default function JoinPage() {
 
         {step === 'confirm' && preview && (
           <div className="mt-8">
-            <div className="flex flex-col items-center gap-4 p-6 rounded-lg border border-zinc-800 bg-zinc-900/40">
+            <div className="flex flex-col items-center gap-4 p-6 rounded-lg border border-border bg-card">
               <DogPhoto
                 dogId={preview.id}
                 photoUrl={preview.photoUrl}
@@ -132,7 +126,7 @@ export default function JoinPage() {
               />
               <div className="text-center">
                 <p className="text-xl font-medium">{preview.name}</p>
-                {preview.breed && <p className="text-sm text-zinc-500 mt-1">{preview.breed}</p>}
+                {preview.breed && <p className="text-sm text-muted-foreground mt-1">{preview.breed}</p>}
               </div>
             </div>
 
@@ -140,7 +134,7 @@ export default function JoinPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 border-zinc-700 text-zinc-300"
+                className="flex-1"
                 disabled={busy}
                 onClick={() => {
                   setStep('enter')
@@ -152,7 +146,7 @@ export default function JoinPage() {
               </Button>
               <Button
                 type="button"
-                className="flex-1 bg-amber-600 hover:bg-amber-500 text-black"
+                className="flex-1"
                 disabled={busy || !isReady}
                 onClick={() => void handleJoin()}
               >

@@ -128,7 +128,7 @@ export function CareActionForm({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-100 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{action ? 'Edit exercise' : 'Add exercise'}</DialogTitle>
         </DialogHeader>
@@ -139,7 +139,6 @@ export function CareActionForm({
               id="name"
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              className="bg-zinc-900 border-zinc-700"
               placeholder="Morning stretch routine"
             />
           </div>
@@ -150,7 +149,6 @@ export function CareActionForm({
               id="description"
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              className="bg-zinc-900 border-zinc-700"
               placeholder="Optional short description"
             />
           </div>
@@ -164,10 +162,10 @@ export function CareActionForm({
                   setForm(f => ({ ...f, category: v as FormState['category'] }))
                 }
               >
-                <SelectTrigger className="w-full bg-zinc-900 border-zinc-700">
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-700">
+                <SelectContent>
                   {CATEGORY_OPTIONS.map(opt => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
@@ -185,10 +183,10 @@ export function CareActionForm({
                   setForm(f => ({ ...f, frequency: v as FormState['frequency'] }))
                 }
               >
-                <SelectTrigger className="w-full bg-zinc-900 border-zinc-700">
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-700">
+                <SelectContent>
                   {FREQUENCY_OPTIONS.map(opt => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
@@ -207,10 +205,10 @@ export function CareActionForm({
                 setForm(f => ({ ...f, timeOfDay: v as FormState['timeOfDay'] }))
               }
             >
-              <SelectTrigger className="w-full bg-zinc-900 border-zinc-700">
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-700">
+              <SelectContent>
                 {TIME_OF_DAY_OPTIONS.map(opt => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
@@ -229,7 +227,6 @@ export function CareActionForm({
                 min={0}
                 value={form.targetReps}
                 onChange={e => setForm(f => ({ ...f, targetReps: e.target.value }))}
-                className="bg-zinc-900 border-zinc-700"
                 placeholder="Optional"
               />
             </div>
@@ -241,7 +238,6 @@ export function CareActionForm({
                 min={0}
                 value={form.targetDurationSeconds}
                 onChange={e => setForm(f => ({ ...f, targetDurationSeconds: e.target.value }))}
-                className="bg-zinc-900 border-zinc-700"
                 placeholder="Optional"
               />
             </div>
@@ -253,27 +249,22 @@ export function CareActionForm({
               id="instructions"
               value={form.instructions}
               onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))}
-              className="bg-zinc-900 border-zinc-700 min-h-20"
+              className="min-h-20"
               placeholder="How to perform this exercise"
             />
           </div>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
           {action && dogId && onMovementsChanged && (
             <MovementEditor dogId={dogId} action={action} onChanged={onMovementsChanged} />
           )}
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="border-zinc-700"
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={busy} className="bg-amber-600 hover:bg-amber-500 text-black">
+            <Button type="submit" disabled={busy}>
               {busy ? 'Saving…' : action ? 'Save changes' : 'Add exercise'}
             </Button>
           </DialogFooter>

@@ -21,7 +21,6 @@ export default function Page() {
   const [creatingBackendUser, setCreatingBackendUser] = React.useState(false)
   const router = useRouter()
 
-  // Handle submission of the sign-up form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -30,19 +29,16 @@ export default function Page() {
       return
     }
 
-    // Validate required fields
     if (!emailAddress.trim() || !password.trim()) {
       toast.error('Please fill in all required fields')
       return
     }
 
-    // Validate password confirmation
     if (password !== confirmPassword) {
       toast.error('Passwords do not match. Please try again.')
       return
     }
 
-    // Start the sign-up process using the email and password provided
     try {
       await signUp.create({
         emailAddress,
@@ -51,18 +47,15 @@ export default function Page() {
         lastName: lastName || undefined
       })
 
-      // Send the user an email with the verification code
       await signUp.prepareEmailAddressVerification({
         strategy: 'email_code'
       })
 
-      // Set 'verifying' true to display second form and capture the OTP code
       setVerifying(true)
       toast.success('Verification code sent to your email')
     } catch (err: unknown) {
       console.error(JSON.stringify(err, null, 2))
 
-      // Handle specific Clerk errors
       if (err && typeof err === 'object' && 'errors' in err && Array.isArray(err.errors)) {
         const clerkError = err as { errors: Array<{ longMessage: string }> }
         toast.error(clerkError.errors[0]?.longMessage || 'Failed to create account. Please try again.')
@@ -74,27 +67,21 @@ export default function Page() {
     }
   }
 
-  // Handle the submission of the verification form
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!isLoaded) return
 
     try {
-      // Use the code the user provided to attempt verification
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code
       })
 
-      // If verification was completed, set the session to active and create user in backend
       if (signUpAttempt.status === 'complete') {
-        // Set the session active first so we have authentication for the API call
         await setActive({ session: signUpAttempt.createdSessionId })
 
-        // Get the token directly after setting the session active
         const token = await getToken()
 
-        // Guard against missing/invalid auth token
         if (!token) {
           console.warn('Missing authentication token after session activation')
           setCreatingBackendUser(false)
@@ -102,7 +89,6 @@ export default function Page() {
           return
         }
 
-        // Create user in backend after Clerk user is successfully created
         setCreatingBackendUser(true)
         try {
           const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3036'
@@ -124,8 +110,6 @@ export default function Page() {
           if (!response.ok) {
             const errorData = await response.json().catch(() => null)
             console.error('Backend user creation failed:', errorData)
-
-            // Don't block the user if backend fails - they can still use the app
             toast.warning('Account created, but some features may need setup.')
           } else {
             console.log('User created successfully in backend')
@@ -133,7 +117,6 @@ export default function Page() {
           }
         } catch (backendError: unknown) {
           console.error('Failed to create user in backend:', backendError)
-          // Still allow user to proceed even if backend creation fails
           toast.warning('Account created, but some features may need setup.')
         } finally {
           setCreatingBackendUser(false)
@@ -150,22 +133,19 @@ export default function Page() {
     }
   }
 
-  // Display the verification form to capture the OTP code
   if (verifying) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Verify your email</h1>
-            <p className="text-lg text-gray-600">Enter the verification code sent to your email</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Verify your email</h1>
+            <p className="text-lg text-muted-foreground">Enter the verification code sent to your email</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="bg-card border border-border rounded-lg shadow-lg p-8">
             <form onSubmit={handleVerify} className="space-y-6">
               <div>
-                <Label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-                  Verification Code
-                </Label>
+                <Label htmlFor="code">Verification Code</Label>
                 <Input
                   id="code"
                   name="code"
@@ -187,21 +167,18 @@ export default function Page() {
     )
   }
 
-  // Display the initial sign-up form to capture the email and password
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign up for Stark Health</h1>
-          <p className="text-lg text-gray-600">Create your account to coordinate your dog&apos;s PT care</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Sign up for Stark Health</h1>
+          <p className="text-lg text-muted-foreground">Create your account to coordinate your dog&apos;s PT care</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-card border border-border rounded-lg shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                First Name
-              </Label>
+              <Label htmlFor="firstName">First Name</Label>
               <Input
                 id="firstName"
                 type="text"
@@ -212,9 +189,7 @@ export default function Page() {
               />
             </div>
             <div>
-              <Label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                Last Name
-              </Label>
+              <Label htmlFor="lastName">Last Name</Label>
               <Input
                 id="lastName"
                 type="text"
@@ -225,9 +200,7 @@ export default function Page() {
               />
             </div>
             <div>
-              <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </Label>
+              <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
                 type="email"
@@ -239,9 +212,7 @@ export default function Page() {
               />
             </div>
             <div>
-              <Label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -253,9 +224,7 @@ export default function Page() {
               />
             </div>
             <div>
-              <Label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </Label>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"

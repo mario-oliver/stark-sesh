@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useApiClient } from '@/hooks/use-api-client'
 import type {
   DailyCareActionRecord,
@@ -39,11 +41,11 @@ export function ActionRow({
   }
 
   return (
-    <li className="border border-zinc-800 rounded-lg p-4 bg-zinc-900/40">
+    <li className="border border-border rounded-lg p-4 bg-card">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-medium text-zinc-100">{action.nameSnapshot}</p>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="font-medium text-foreground">{action.nameSnapshot}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {action.categorySnapshot.replace(/_/g, ' ')}
           </p>
         </div>
@@ -53,66 +55,69 @@ export function ActionRow({
       </div>
 
       {(action.tolerance || action.issueObserved) && (
-        <p className="text-sm text-zinc-400 mt-2">
+        <p className="text-sm text-muted-foreground mt-2">
           {action.tolerance && <span>Tolerance: {action.tolerance.toLowerCase()}. </span>}
-          {action.issueObserved && <span className="text-amber-400">Issue noted.</span>}
+          {action.issueObserved && <span className="text-primary">Issue noted.</span>}
         </p>
       )}
 
       {action.notes && !editingNote && (
-        <p className="text-sm text-zinc-400 mt-2">{action.notes}</p>
+        <p className="text-sm text-muted-foreground mt-2">{action.notes}</p>
       )}
 
       {action.completedBy && (
-        <p className="text-xs text-zinc-500 mt-2">By {caregiverName(action.completedBy)}</p>
+        <p className="text-xs text-muted-foreground mt-2">By {caregiverName(action.completedBy)}</p>
       )}
 
       <div className="flex flex-wrap gap-2 mt-3">
         {action.status !== 'COMPLETED' && (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="xs"
             disabled={busy}
             onClick={() => void update({ status: 'COMPLETED' })}
-            className="text-xs px-2 py-1 rounded border border-zinc-700 text-zinc-400 hover:text-zinc-200"
           >
             Mark done
-          </button>
+          </Button>
         )}
         {action.status !== 'SKIPPED' && (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="xs"
             disabled={busy}
             onClick={() => void update({ status: 'SKIPPED' })}
-            className="text-xs px-2 py-1 rounded border border-zinc-700 text-zinc-400 hover:text-zinc-200"
           >
             Skip
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="xs"
           onClick={() => setEditingNote(v => !v)}
-          className="text-xs px-2 py-1 rounded border border-zinc-700 text-zinc-400 hover:text-zinc-200"
         >
           {editingNote ? 'Cancel' : 'Note'}
-        </button>
+        </Button>
       </div>
 
       {editingNote && (
         <div className="mt-2 flex gap-2">
-          <input
+          <Input
             value={note}
             onChange={e => setNote(e.target.value)}
-            className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm text-zinc-200"
+            className="flex-1"
             placeholder="Add a note"
           />
-          <button
+          <Button
             type="button"
+            size="xs"
             disabled={busy}
             onClick={() => void update({ notes: note }).then(() => setEditingNote(false))}
-            className="text-xs px-2 py-1 rounded bg-amber-600 text-black"
           >
             Save
-          </button>
+          </Button>
         </div>
       )}
     </li>
