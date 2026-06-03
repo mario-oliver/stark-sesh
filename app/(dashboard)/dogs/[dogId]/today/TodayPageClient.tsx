@@ -2,164 +2,17 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
+import { ActionRow } from '@/components/care/ActionRow'
 import { DogPhoto } from '@/components/dog/DogPhoto'
+import { DogSubNav } from '@/components/dog/DogSubNav'
 import { VoiceRecordBar } from '@/components/voice/VoiceRecordBar'
 import { useApiClient } from '@/hooks/use-api-client'
 import type {
-  DailyCareActionRecord,
-  DailyCareActionStatus,
   HealthObservationRecord,
   TodayPayload,
-  Tolerance,
   VoiceNoteRecord
 } from '@/lib/api/endpoints/dogs'
-
-function localDateString() {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-function formatDisplayDate(dateStr: string) {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  })
-}
-
-function caregiverName(user: { firstName: string | null; lastName: string | null; email: string }) {
-  const name = [user.firstName, user.lastName].filter(Boolean).join(' ')
-  return name || user.email
-}
-
-const STATUS_LABELS: Record<DailyCareActionStatus, string> = {
-  PENDING: 'Pending',
-  COMPLETED: 'Done',
-  SKIPPED: 'Skipped',
-  PARTIALLY_COMPLETED: 'Partial',
-  UNCLEAR: 'Unclear'
-}
-
-const STATUS_COLORS: Record<DailyCareActionStatus, string> = {
-  PENDING: 'bg-zinc-700 text-zinc-300',
-  COMPLETED: 'bg-emerald-900/60 text-emerald-300',
-  SKIPPED: 'bg-zinc-800 text-zinc-400',
-  PARTIALLY_COMPLETED: 'bg-amber-900/50 text-amber-300',
-  UNCLEAR: 'bg-orange-900/50 text-orange-300'
-}
-
-function ActionRow({
-  action,
-  dogId,
-  onUpdated
-}: {
-  action: DailyCareActionRecord
-  dogId: string
-  onUpdated: () => void
-}) {
-  const { apiClient, isReady } = useApiClient()
-  const [editingNote, setEditingNote] = useState(false)
-  const [note, setNote] = useState(action.notes ?? '')
-  const [busy, setBusy] = useState(false)
-
-  const update = async (body: {
-    status?: DailyCareActionStatus
-    notes?: string
-    tolerance?: Tolerance | null
-  }) => {
-    if (!isReady) return
-    setBusy(true)
-    try {
-      await apiClient.updateDailyAction(dogId, action.id, body)
-      onUpdated()
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <li className="border border-zinc-800 rounded-lg p-4 bg-zinc-900/40">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-medium text-zinc-100">{action.nameSnapshot}</p>
-          <p className="text-xs text-zinc-500 mt-0.5">{action.categorySnapshot.replace(/_/g, ' ')}</p>
-        </div>
-        <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${STATUS_COLORS[action.status]}`}>
-          {STATUS_LABELS[action.status]}
-        </span>
-      </div>
-
-      {(action.tolerance || action.issueObserved) && (
-        <p className="text-sm text-zinc-400 mt-2">
-          {action.tolerance && <span>Tolerance: {action.tolerance.toLowerCase()}. </span>}
-          {action.issueObserved && <span className="text-amber-400">Issue noted.</span>}
-        </p>
-      )}
-
-      {action.notes && !editingNote && (
-        <p className="text-sm text-zinc-400 mt-2">{action.notes}</p>
-      )}
-
-      {action.completedBy && (
-        <p className="text-xs text-zinc-500 mt-2">By {caregiverName(action.completedBy)}</p>
-      )}
-
-      <div className="flex flex-wrap gap-2 mt-3">
-        {action.status !== 'COMPLETED' && (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void update({ status: 'COMPLETED' })}
-            className="text-xs px-2 py-1 rounded border border-zinc-700 text-zinc-400 hover:text-zinc-200"
-          >
-            Mark done
-          </button>
-        )}
-        {action.status !== 'SKIPPED' && (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void update({ status: 'SKIPPED' })}
-            className="text-xs px-2 py-1 rounded border border-zinc-700 text-zinc-400 hover:text-zinc-200"
-          >
-            Skip
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={() => setEditingNote(v => !v)}
-          className="text-xs px-2 py-1 rounded border border-zinc-700 text-zinc-400 hover:text-zinc-200"
-        >
-          {editingNote ? 'Cancel' : 'Note'}
-        </button>
-      </div>
-
-      {editingNote && (
-        <div className="mt-2 flex gap-2">
-          <input
-            value={note}
-            onChange={e => setNote(e.target.value)}
-            className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm text-zinc-200"
-            placeholder="Add a note"
-          />
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void update({ notes: note }).then(() => setEditingNote(false))}
-            className="text-xs px-2 py-1 rounded bg-amber-600 text-black"
-          >
-            Save
-          </button>
-        </div>
-      )}
-    </li>
-  )
-}
+import { caregiverName, formatDisplayDate, localDateString } from '@/lib/care/display'
 
 function VoiceNoteCard({ note }: { note: VoiceNoteRecord }) {
   const [expanded, setExpanded] = useState(false)
@@ -291,7 +144,7 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
           ← Home
         </Link>
 
-        <header className="mt-4 mb-6">
+        <header className="mt-4 mb-2">
           <p className="text-xs uppercase tracking-widest text-zinc-500">Today</p>
           <div className="flex items-center gap-4 mt-1">
             <DogPhoto dogId={dog.id} photoUrl={dog.photoUrl} name={dog.name} size="xl" />
@@ -305,6 +158,8 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
             <p className="text-sm text-zinc-400 mt-3 border-l-2 border-amber-600 pl-3">{dailyLog.summary}</p>
           )}
         </header>
+
+        <DogSubNav dogId={dogId} />
 
         {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
@@ -346,15 +201,6 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
           Stark Health helps organize care notes and PT routines. It does not provide veterinary medical
           advice.
         </footer>
-
-        <div className="flex gap-4 mt-4 text-sm">
-          <Link href={`/dogs/${dogId}/profile`} className="text-zinc-500 hover:text-zinc-300 underline">
-            Profile
-          </Link>
-          <Link href={`/dogs/${dogId}/history`} className="text-zinc-500 hover:text-zinc-300 underline">
-            History
-          </Link>
-        </div>
       </div>
 
       <VoiceRecordBar

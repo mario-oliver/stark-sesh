@@ -36,6 +36,18 @@ const NavBar = () => {
           >
             Today
           </Link>
+          <Link
+            href="/tasks"
+            className="text-zinc-400 hover:text-zinc-200 text-sm font-medium hidden sm:inline"
+          >
+            Tasks
+          </Link>
+          <Link
+            href="/calendar"
+            className="text-zinc-400 hover:text-zinc-200 text-sm font-medium hidden sm:inline"
+          >
+            Calendar
+          </Link>
           <UserButton
             afterSignOutUrl="/"
             appearance={{

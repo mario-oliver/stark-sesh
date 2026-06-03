@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import { useEffect, useRef, useState } from 'react'
@@ -232,6 +233,13 @@ export default function OnboardingPage() {
             >
               Continue
             </Button>
+
+            <p className="text-center text-sm text-zinc-500 pt-2">
+              Have a share code?{' '}
+              <Link href="/join" className="text-amber-400 underline hover:text-amber-300">
+                Join an existing dog
+              </Link>
+            </p>
           </form>
         )}
 

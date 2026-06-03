@@ -23,6 +23,72 @@ export type HealthObservationType =
   | 'MEDICATION'
   | 'GENERAL_NOTE'
 
+export type CareActionCategory =
+  | 'STRETCH'
+  | 'STRENGTH'
+  | 'MOBILITY'
+  | 'WALK'
+  | 'MEDICATION'
+  | 'GENERAL_CARE'
+  | 'OBSERVATION_CHECKPOINT'
+
+export type CareActionFrequency = 'DAILY' | 'EVERY_OTHER_DAY' | 'WEEKLY' | 'AS_NEEDED'
+
+export type CareActionTimeOfDay = 'MORNING' | 'EVENING' | 'ANYTIME'
+
+export interface CareActionRecord {
+  id: string
+  carePlanId: string
+  name: string
+  description: string | null
+  category: CareActionCategory
+  frequency: CareActionFrequency
+  timeOfDay: CareActionTimeOfDay | null
+  targetReps: number | null
+  targetDurationSeconds: number | null
+  instructions: string | null
+  sortOrder: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CarePlanPayload {
+  id: string
+  dogId: string
+  name: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  actions: CareActionRecord[]
+}
+
+export interface CreateCareActionInput {
+  name: string
+  description?: string | null
+  category: CareActionCategory
+  frequency: CareActionFrequency
+  timeOfDay?: CareActionTimeOfDay | null
+  targetReps?: number | null
+  targetDurationSeconds?: number | null
+  instructions?: string | null
+  sortOrder?: number
+}
+
+export interface UpdateCareActionInput extends Partial<CreateCareActionInput> {}
+
+export interface CalendarDaySummary {
+  date: string
+  completedCount: number
+  totalActions: number
+  hasLog: boolean
+}
+
+export interface CalendarPayload {
+  month: string
+  days: CalendarDaySummary[]
+}
+
 export interface UserSummary {
   id: string
   email: string
@@ -41,6 +107,14 @@ export interface DogRecord {
   updatedAt: string
   role?: string
   defaultCarePlan?: string
+  shareCode?: string
+}
+
+export interface JoinPreview {
+  id: string
+  name: string
+  breed: string | null
+  photoUrl: string | null
 }
 
 export interface CreateDogInput {
@@ -157,6 +231,24 @@ export interface DogsApi {
     }
   ): Promise<{ success: boolean; data: DailyCareActionRecord }>
   addDogMember(dogId: string, userId: string, role?: string): Promise<{ success: boolean; data: unknown }>
+  getCarePlan(dogId: string): Promise<{ success: boolean; data: CarePlanPayload }>
+  updateCarePlan(dogId: string, name: string): Promise<{ success: boolean; data: CarePlanPayload }>
+  createCareAction(
+    dogId: string,
+    input: CreateCareActionInput
+  ): Promise<{ success: boolean; data: CareActionRecord }>
+  updateCareAction(
+    dogId: string,
+    actionId: string,
+    input: UpdateCareActionInput
+  ): Promise<{ success: boolean; data: CareActionRecord }>
+  deactivateCareAction(
+    dogId: string,
+    actionId: string
+  ): Promise<{ success: boolean; data: CareActionRecord }>
+  getCalendar(dogId: string, month: string): Promise<{ success: boolean; data: CalendarPayload }>
+  previewJoin(code: string): Promise<{ success: boolean; data: JoinPreview }>
+  joinByShareCode(shareCode: string): Promise<{ success: boolean; data: DogRecord; message?: string }>
 }
 
 export const dogsMethods = {
@@ -233,6 +325,63 @@ export const dogsMethods = {
     return this.request(`/v1/dogs/${dogId}/members`, {
       method: 'POST',
       data: { userId, role }
+    })
+  },
+
+  async getCarePlan(this: ApiClient, dogId: string) {
+    return this.request<{ success: boolean; data: CarePlanPayload }>(`/v1/dogs/${dogId}/care-plan`)
+  },
+
+  async updateCarePlan(this: ApiClient, dogId: string, name: string) {
+    return this.request<{ success: boolean; data: CarePlanPayload }>(`/v1/dogs/${dogId}/care-plan`, {
+      method: 'PATCH',
+      data: { name }
+    })
+  },
+
+  async createCareAction(this: ApiClient, dogId: string, input: CreateCareActionInput) {
+    return this.request<{ success: boolean; data: CareActionRecord }>(
+      `/v1/dogs/${dogId}/care-plan/actions`,
+      { method: 'POST', data: input }
+    )
+  },
+
+  async updateCareAction(
+    this: ApiClient,
+    dogId: string,
+    actionId: string,
+    input: UpdateCareActionInput
+  ) {
+    return this.request<{ success: boolean; data: CareActionRecord }>(
+      `/v1/dogs/${dogId}/care-plan/actions/${actionId}`,
+      { method: 'PATCH', data: input }
+    )
+  },
+
+  async deactivateCareAction(this: ApiClient, dogId: string, actionId: string) {
+    return this.request<{ success: boolean; data: CareActionRecord }>(
+      `/v1/dogs/${dogId}/care-plan/actions/${actionId}/deactivate`,
+      { method: 'PATCH' }
+    )
+  },
+
+  async getCalendar(this: ApiClient, dogId: string, month: string) {
+    return this.request<{ success: boolean; data: CalendarPayload }>(
+      `/v1/dogs/${dogId}/calendar?month=${encodeURIComponent(month)}`
+    )
+  },
+
+  async previewJoin(this: ApiClient, code: string) {
+    const params = new URLSearchParams({ code })
+    return this.request<{ success: boolean; data: JoinPreview }>(
+      `/v1/dogs/join/preview?${params.toString()}`
+    )
+  },
+
+  async joinByShareCode(this: ApiClient, shareCode: string) {
+    return this.request<{ success: boolean; data: DogRecord; message?: string }>('/v1/dogs/join', {
+      method: 'POST',
+      data: { shareCode }
     })
   }
 }
