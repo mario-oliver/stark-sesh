@@ -5,7 +5,7 @@ import { ProfileClient } from './ProfileClient'
 
 export default async function DogProfilePage({ params }: { params: Promise<{ dogId: string }> }) {
   const { userId } = await auth()
-  if (!userId) redirect('/sign-in?redirect_url=/today')
+  if (!userId) redirect('/sign-in?redirect_url=/profile')
 
   const { dogId } = await params
   return <ProfileClient dogId={dogId} />

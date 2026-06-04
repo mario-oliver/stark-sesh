@@ -6,10 +6,7 @@ import { cn } from '@/lib/utils'
 
 const links = (dogId: string) => [
   { href: `/dogs/${dogId}/today`, label: 'Today' },
-  { href: `/dogs/${dogId}/tasks`, label: 'Tasks' },
-  { href: `/dogs/${dogId}/calendar`, label: 'Calendar' },
-  { href: `/dogs/${dogId}/history`, label: 'History' },
-  { href: `/dogs/${dogId}/profile`, label: 'Profile' }
+  { href: `/dogs/${dogId}/calendar`, label: 'Calendar' }
 ]
 
 export function DogSubNav({ dogId }: { dogId: string }) {

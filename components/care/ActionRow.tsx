@@ -9,16 +9,20 @@ import type {
   DailyCareActionStatus,
   Tolerance
 } from '@/lib/api/endpoints/dogs'
-import { STATUS_COLORS, STATUS_LABELS, caregiverName } from '@/lib/care/display'
+import { caregiverName, formatTimestamp } from '@/lib/care/display'
 
 export function ActionRow({
   action,
   dogId,
-  onUpdated
+  onUpdated,
+  embedded = false,
+  hideHeader = false
 }: {
   action: DailyCareActionRecord
   dogId: string
   onUpdated: () => void
+  embedded?: boolean
+  hideHeader?: boolean
 }) {
   const { apiClient, isReady } = useApiClient()
   const [editingNote, setEditingNote] = useState(false)
@@ -40,36 +44,28 @@ export function ActionRow({
     }
   }
 
-  return (
-    <li className="border border-border rounded-lg p-4 bg-card">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-medium text-foreground">{action.nameSnapshot}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {action.categorySnapshot.replace(/_/g, ' ')}
-          </p>
-        </div>
-        <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${STATUS_COLORS[action.status]}`}>
-          {STATUS_LABELS[action.status]}
-        </span>
-      </div>
-
+  const content = (
+    <>
       {(action.tolerance || action.issueObserved) && (
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="text-sm text-muted-foreground">
           {action.tolerance && <span>Tolerance: {action.tolerance.toLowerCase()}. </span>}
           {action.issueObserved && <span className="text-primary">Issue noted.</span>}
         </p>
       )}
 
       {action.notes && !editingNote && (
-        <p className="text-sm text-muted-foreground mt-2">{action.notes}</p>
+        <p className="text-sm text-muted-foreground">{action.notes}</p>
       )}
 
-      {action.completedBy && (
-        <p className="text-xs text-muted-foreground mt-2">By {caregiverName(action.completedBy)}</p>
+      {!hideHeader && (action.completedBy || action.completedAt) && (
+        <p className="text-xs text-muted-foreground">
+          {action.completedBy && <>By {caregiverName(action.completedBy)}</>}
+          {action.completedBy && action.completedAt && ' · '}
+          {action.completedAt && formatTimestamp(action.completedAt)}
+        </p>
       )}
 
-      <div className="flex flex-wrap gap-2 mt-3">
+      <div className="flex flex-wrap gap-2">
         {action.status !== 'COMPLETED' && (
           <Button
             type="button"
@@ -103,7 +99,7 @@ export function ActionRow({
       </div>
 
       {editingNote && (
-        <div className="mt-2 flex gap-2">
+        <div className="flex gap-2">
           <Input
             value={note}
             onChange={e => setNote(e.target.value)}
@@ -120,6 +116,26 @@ export function ActionRow({
           </Button>
         </div>
       )}
+    </>
+  )
+
+  if (embedded) {
+    return <div className="space-y-3">{content}</div>
+  }
+
+  return (
+    <li className="border border-border rounded-lg p-4 bg-card space-y-3">
+      {!hideHeader && (
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-medium text-foreground">{action.nameSnapshot}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {action.categorySnapshot.replace(/_/g, ' ')}
+            </p>
+          </div>
+        </div>
+      )}
+      {content}
     </li>
   )
 }

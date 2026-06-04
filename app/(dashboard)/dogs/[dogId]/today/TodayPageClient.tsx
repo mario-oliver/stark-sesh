@@ -8,8 +8,9 @@ import { DogSubNav } from '@/components/dog/DogSubNav'
 import { VoiceRecordBar } from '@/components/voice/VoiceRecordBar'
 import { Button } from '@/components/ui/button'
 import { useApiClient } from '@/hooks/use-api-client'
+import { useActiveDog } from '@/hooks/use-active-dog'
 import type { HealthObservationRecord, TodayPayload, VoiceNoteRecord } from '@/lib/api/endpoints/dogs'
-import { caregiverName, formatDisplayDate, localDateString } from '@/lib/care/display'
+import { caregiverName, formatDisplayDate, formatTimestamp, localDateString } from '@/lib/care/display'
 
 function VoiceNoteCard({ note }: { note: VoiceNoteRecord }) {
   const [expanded, setExpanded] = useState(false)
@@ -20,7 +21,9 @@ function VoiceNoteCard({ note }: { note: VoiceNoteRecord }) {
         <span className="text-xs text-muted-foreground shrink-0">{note.processingStatus}</span>
       </div>
       {note.caregiverNote && <p className="text-xs text-primary mt-1">{note.caregiverNote}</p>}
-      <p className="text-xs text-muted-foreground mt-1">{caregiverName(note.user)}</p>
+      <p className="text-xs text-muted-foreground mt-1">
+        {caregiverName(note.user)} · {formatTimestamp(note.createdAt)}
+      </p>
       <Button
         type="button"
         variant="link"
@@ -49,13 +52,16 @@ function ObservationCard({ obs }: { obs: HealthObservationRecord }) {
       </p>
       <p className="text-sm text-muted-foreground mt-1">{obs.note}</p>
       {obs.bodyArea && <p className="text-xs text-muted-foreground mt-1">{obs.bodyArea}</p>}
-      <p className="text-xs text-muted-foreground mt-1">{caregiverName(obs.user)}</p>
+      <p className="text-xs text-muted-foreground mt-1">
+        {caregiverName(obs.user)} · {formatTimestamp(obs.observedAt ?? obs.createdAt)}
+      </p>
     </li>
   )
 }
 
 export function TodayPageClient({ dogId }: { dogId: string }) {
   const { apiClient, isReady } = useApiClient()
+  useActiveDog(dogId)
   const [payload, setPayload] = useState<TodayPayload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -135,12 +141,12 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
     <div className="min-h-screen bg-background text-foreground pb-40">
       <div className="max-w-lg mx-auto px-4 pt-6">
         <Link href="/today" className="text-sm text-primary hover:text-primary/80 underline">
-          ← Home
+          ← Care
         </Link>
 
         <header className="mt-4 mb-2 flex flex-col items-center text-center">
           <p className="text-xs uppercase tracking-widest text-accent-foreground font-medium w-full text-left">
-            Today
+            Care
           </p>
           <div className="mt-3 w-full">
             <DogHero dogId={dog.id} photoUrl={dog.photoUrl} name={dog.name} />
@@ -163,7 +169,7 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
         <section className="mb-8">
           <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Exercises today</h2>
           <p className="text-xs text-muted-foreground mb-3">
-            Speak your update below — tap an exercise with movements to work through each step.
+            Speak your update below — tap an exercise to expand and see details.
           </p>
           <ul className="space-y-3">
             {dailyLog.dailyCareActions.map(action => (

@@ -6,7 +6,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { ExerciseCard } from '@/components/care/ExerciseCard'
 import { CareActionCard } from '@/components/care/CareActionCard'
 import { CareActionForm } from '@/components/care/CareActionForm'
-import { DogSubNav } from '@/components/dog/DogSubNav'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,6 +16,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { useApiClient } from '@/hooks/use-api-client'
+import { useActiveDog } from '@/hooks/use-active-dog'
 import type {
   CareActionRecord,
   CarePlanPayload,
@@ -35,6 +35,7 @@ type Tab = 'routine' | 'schedule'
 
 export function TasksPageClient({ dogId }: { dogId: string }) {
   const { apiClient, isReady } = useApiClient()
+  useActiveDog(dogId)
   const [tab, setTab] = useState<Tab>('routine')
   const [plan, setPlan] = useState<CarePlanPayload | null>(null)
   const [loading, setLoading] = useState(true)
@@ -116,15 +117,13 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
     <div className="min-h-screen bg-background text-foreground pb-12">
       <div className="max-w-lg mx-auto px-4 pt-6">
         <Link href="/today" className="text-sm text-primary hover:text-primary/80 underline">
-          ← Home
+          ← Care
         </Link>
 
-        <header className="mt-4 mb-2">
+        <header className="mt-4 mb-6">
           <h1 className="text-2xl font-semibold">Exercises</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage your care routine and daily schedule</p>
         </header>
-
-        <DogSubNav dogId={dogId} />
 
         <div className="flex gap-2 mb-6">
           <Button

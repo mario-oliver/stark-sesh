@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   SignInButton,
   SignUpButton,
@@ -6,19 +5,21 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
+import { HeaderNav } from "@/components/header-nav";
 
 const NavBar = () => {
   return (
-    <header className="sticky top-0 z-50 flex justify-between items-center px-6 sm:px-8 h-16 border-b border-border bg-background/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 flex justify-between items-center px-4 sm:px-8 h-16 border-b border-border bg-background/80 backdrop-blur-sm">
       <Link
         href="/"
-        className="text-lg font-semibold text-primary hover:text-primary/80 transition-colors"
+        className="text-lg font-semibold text-primary hover:text-primary/80 transition-colors shrink-0"
       >
         Stark Health
       </Link>
-      <nav className="flex items-center gap-2 sm:gap-3">
+      <nav className="flex items-center gap-1 sm:gap-2">
         <ModeToggle />
         <SignedOut>
           <SignInButton forceRedirectUrl="/today">
@@ -33,24 +34,7 @@ const NavBar = () => {
           </SignUpButton>
         </SignedOut>
         <SignedIn>
-          <Link
-            href="/today"
-            className="text-muted-foreground hover:text-accent-foreground hover:bg-accent/60 rounded-md px-2 py-1 text-sm font-medium transition-colors"
-          >
-            Today
-          </Link>
-          <Link
-            href="/tasks"
-            className="text-muted-foreground hover:text-accent-foreground hover:bg-accent/60 rounded-md px-2 py-1 text-sm font-medium hidden sm:inline transition-colors"
-          >
-            Tasks
-          </Link>
-          <Link
-            href="/calendar"
-            className="text-muted-foreground hover:text-accent-foreground hover:bg-accent/60 rounded-md px-2 py-1 text-sm font-medium hidden sm:inline transition-colors"
-          >
-            Calendar
-          </Link>
+          <HeaderNav />
           <UserButton
             afterSignOutUrl="/"
             appearance={{

@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { DogSubNav } from '@/components/dog/DogSubNav'
 import { useApiClient } from '@/hooks/use-api-client'
+import { useActiveDog } from '@/hooks/use-active-dog'
 
 export function HistoryClient({ dogId }: { dogId: string }) {
   const { apiClient, isReady } = useApiClient()
+  useActiveDog(dogId)
   const [logs, setLogs] = useState<
     Array<{
       id: string
@@ -33,13 +34,9 @@ export function HistoryClient({ dogId }: { dogId: string }) {
   return (
     <div className="min-h-screen bg-background text-foreground max-w-lg mx-auto px-4 py-8">
       <Link href="/today" className="text-sm text-primary underline">
-        ← Home
+        ← Care
       </Link>
       <h1 className="text-2xl font-semibold mt-4">Care history</h1>
-
-      <div className="mt-4">
-        <DogSubNav dogId={dogId} />
-      </div>
 
       <ul className="mt-6 space-y-3">
         {logs.map(log => (

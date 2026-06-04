@@ -1,9 +1,21 @@
 'use client'
 
-import Link from 'next/link'
-import type { DailyCareActionRecord } from '@/lib/api/endpoints/dogs'
+import { useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { ActionRow } from '@/components/care/ActionRow'
-import { STATUS_COLORS, STATUS_LABELS } from '@/lib/care/display'
+import { MovementRow } from '@/components/care/MovementRow'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { useApiClient } from '@/hooks/use-api-client'
+import type { DailyCareActionRecord } from '@/lib/api/endpoints/dogs'
+import {
+  STATUS_COLORS,
+  STATUS_LABELS,
+  caregiverName,
+  formatTimestamp
+} from '@/lib/care/display'
+import { cn } from '@/lib/utils'
 
 export function ExerciseCard({
   action,
@@ -14,41 +26,113 @@ export function ExerciseCard({
   dogId: string
   onUpdated: () => void
 }) {
+  const { apiClient, isReady } = useApiClient()
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
   const hasMovements = (action.steps?.length ?? 0) > 0
 
-  if (!hasMovements) {
-    return <ActionRow action={action} dogId={dogId} onUpdated={onUpdated} />
+  const updateExercise = async (status: 'COMPLETED' | 'SKIPPED') => {
+    if (!isReady) return
+    setBusy(true)
+    try {
+      await apiClient.updateDailyAction(dogId, action.id, { status })
+      onUpdated()
+    } finally {
+      setBusy(false)
+    }
   }
-
-  const progress = action.movementProgress
-  const progressLabel = progress
-    ? `${progress.completed} of ${progress.total} movements`
-    : null
 
   return (
     <li>
-      <Link
-        href={`/dogs/${dogId}/today/exercises/${action.id}`}
-        className="block border border-border rounded-lg p-4 bg-card bg-gradient-to-br from-card to-accent/20 hover:border-primary/40 hover:from-accent/10 transition-colors"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="font-medium text-foreground">{action.nameSnapshot}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {action.categorySnapshot.replace(/_/g, ' ')}
-            </p>
-            {progressLabel && (
-              <p className="text-xs text-primary mt-2">{progressLabel}</p>
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <Card className="gap-0 py-0 overflow-hidden shadow-none">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-accent/30 transition-colors"
+            >
+              <span className="font-medium text-foreground">{action.nameSnapshot}</span>
+              <ChevronDown
+                className={cn(
+                  'size-4 shrink-0 text-muted-foreground transition-transform duration-200',
+                  open && 'rotate-180'
+                )}
+              />
+            </button>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <CardContent className="pt-0 pb-4 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  {action.categorySnapshot.replace(/_/g, ' ')}
+                </p>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full shrink-0 ${STATUS_COLORS[action.status]}`}
+                >
+                  {STATUS_LABELS[action.status]}
+                </span>
+              </div>
+
+              {hasMovements && action.movementProgress && (
+                <p className="text-xs text-primary">
+                  {action.movementProgress.completed} of {action.movementProgress.total} movements
+                </p>
+              )}
+
+              {hasMovements ? (
+                <ul className="space-y-3">
+                  {action.steps.map(movement => (
+                    <MovementRow
+                      key={movement.id}
+                      movement={movement}
+                      dogId={dogId}
+                      onUpdated={onUpdated}
+                    />
+                  ))}
+                </ul>
+              ) : (
+                <ActionRow action={action} dogId={dogId} onUpdated={onUpdated} embedded hideHeader />
+              )}
+
+              {(action.completedBy || action.completedAt) && (
+                <p className="text-xs text-muted-foreground">
+                  {action.completedBy && <>By {caregiverName(action.completedBy)}</>}
+                  {action.completedBy && action.completedAt && ' · '}
+                  {action.completedAt && formatTimestamp(action.completedAt)}
+                </p>
+              )}
+            </CardContent>
+
+            {hasMovements && (
+              <CardFooter className="border-t pt-4 pb-4 flex flex-wrap gap-2">
+                {action.status !== 'COMPLETED' && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => void updateExercise('COMPLETED')}
+                    className="flex-1 min-w-[140px]"
+                  >
+                    Mark entire exercise done
+                  </Button>
+                )}
+                {action.status !== 'SKIPPED' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => void updateExercise('SKIPPED')}
+                  >
+                    Skip exercise
+                  </Button>
+                )}
+              </CardFooter>
             )}
-          </div>
-          <span
-            className={`text-xs px-2 py-1 rounded-full shrink-0 ${STATUS_COLORS[action.status]}`}
-          >
-            {STATUS_LABELS[action.status]}
-          </span>
-        </div>
-        <p className="text-xs text-muted-foreground mt-3">Tap to view movements →</p>
-      </Link>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
     </li>
   )
 }

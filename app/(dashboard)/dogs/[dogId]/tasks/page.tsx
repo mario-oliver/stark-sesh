@@ -5,7 +5,7 @@ import { TasksPageClient } from './TasksPageClient'
 export default async function TasksPage({ params }: { params: Promise<{ dogId: string }> }) {
   const { userId } = await auth()
   if (!userId) {
-    redirect('/sign-in?redirect_url=/today')
+    redirect('/sign-in?redirect_url=/exercises')
   }
 
   const { dogId } = await params

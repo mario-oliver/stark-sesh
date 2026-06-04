@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/use-api-client'
+import { resolveDogId, setActiveDogId } from '@/lib/active-dog'
 import { DEFAULT_ROUTINE_ITEMS, DEFAULT_ROUTINE_NAME } from '@/lib/care/default-routine'
 import { uploadDogPhotoToS3 } from '@/lib/upload-dog-photo'
 
@@ -40,7 +41,7 @@ export default function OnboardingPage() {
       try {
         const res = await apiClient.listDogs()
         if (res.data.length > 0) {
-          router.replace(`/dogs/${res.data[0].id}/today`)
+          router.replace(`/dogs/${resolveDogId(res.data)}/today`)
           return
         }
       } catch {
@@ -86,6 +87,7 @@ export default function OnboardingPage() {
         age: parsedAge,
         photoKey
       })
+      setActiveDogId(res.data.id)
       router.replace(`/dogs/${res.data.id}/today`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not create your dog. Try again.')

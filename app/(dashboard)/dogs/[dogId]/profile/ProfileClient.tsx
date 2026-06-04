@@ -3,14 +3,15 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { DogPhoto } from '@/components/dog/DogPhoto'
-import { DogSubNav } from '@/components/dog/DogSubNav'
 import { Button } from '@/components/ui/button'
 import { useApiClient } from '@/hooks/use-api-client'
+import { useActiveDog } from '@/hooks/use-active-dog'
 import type { DogRecord } from '@/lib/api/endpoints/dogs'
 import { formatShareCode } from '@/lib/share-code'
 
 export function ProfileClient({ dogId }: { dogId: string }) {
   const { apiClient, isReady } = useApiClient()
+  useActiveDog(dogId)
   const [dog, setDog] = useState<DogRecord | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -38,9 +39,8 @@ export function ProfileClient({ dogId }: { dogId: string }) {
   return (
     <div className="min-h-screen bg-background text-foreground max-w-lg mx-auto px-4 py-8">
       <Link href="/today" className="text-sm text-primary underline">
-        ← Home
+        ← Care
       </Link>
-      <DogSubNav dogId={dogId} />
       <div className="mt-6">
         <DogPhoto dogId={dog.id} photoUrl={dog.photoUrl} name={dog.name} size="xl" />
       </div>

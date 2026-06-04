@@ -6,6 +6,7 @@ import { CalendarDayPanel } from '@/components/care/CalendarDayPanel'
 import { DogSubNav } from '@/components/dog/DogSubNav'
 import { Calendar } from '@/components/ui/calendar'
 import { useApiClient } from '@/hooks/use-api-client'
+import { useActiveDog } from '@/hooks/use-active-dog'
 import type { CalendarDaySummary } from '@/lib/api/endpoints/dogs'
 import { localDateString, monthString, parseDateString } from '@/lib/care/display'
 
@@ -24,6 +25,7 @@ export function CalendarPageClient({
   initialDate?: string
 }) {
   const { apiClient, isReady } = useApiClient()
+  useActiveDog(dogId)
   const today = localDateString()
   const [selectedDate, setSelectedDate] = useState(initialDate ?? today)
   const [visibleMonth, setVisibleMonth] = useState(
@@ -72,12 +74,13 @@ export function CalendarPageClient({
     <div className="min-h-screen bg-background text-foreground pb-12">
       <div className="max-w-lg mx-auto px-4 pt-6">
         <Link href="/today" className="text-sm text-primary hover:text-primary/80 underline">
-          ← Home
+          ← Care
         </Link>
 
         <header className="mt-4 mb-2">
-          <h1 className="text-2xl font-semibold">Calendar</h1>
-          <p className="text-sm text-muted-foreground mt-1">Track care tasks over time</p>
+          <p className="text-xs uppercase tracking-widest text-accent-foreground font-medium">Care</p>
+          <h1 className="text-2xl font-semibold mt-1">Calendar</h1>
+          <p className="text-sm text-muted-foreground mt-1">Browse past days and track progress</p>
         </header>
 
         <DogSubNav dogId={dogId} />
@@ -94,7 +97,7 @@ export function CalendarPageClient({
           </span>
         </div>
 
-        <div className="relative">
+        <div className="relative w-full">
           {loading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 rounded-lg">
               <p className="text-sm text-muted-foreground">Loading…</p>
@@ -110,11 +113,14 @@ export function CalendarPageClient({
             }}
             modifiers={modifiers}
             modifiersClassNames={{
-              complete: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-primary',
-              partial: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-primary/60',
-              pendingPast: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-muted-foreground'
+              complete:
+                'after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-primary after:content-[""]',
+              partial:
+                'after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-primary/60 after:content-[""]',
+              pendingPast:
+                'after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 after:size-1.5 after:rounded-full after:bg-muted-foreground after:content-[""]'
             }}
-            className="mx-auto"
+            className="w-full"
           />
         </div>
 

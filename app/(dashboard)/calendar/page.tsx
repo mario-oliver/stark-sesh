@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import { useApiClient } from '@/hooks/use-api-client'
+import { resolveDogId } from '@/lib/active-dog'
 
 export default function CalendarRedirectPage() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function CalendarRedirectPage() {
           router.replace('/onboarding')
           return
         }
-        router.replace(`/dogs/${dogs[0].id}/calendar`)
+        router.replace(`/dogs/${resolveDogId(dogs)}/calendar`)
       } catch {
         router.replace('/sign-in?redirect_url=/calendar')
       }

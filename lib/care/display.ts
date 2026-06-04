@@ -35,6 +35,15 @@ export function parseDateString(dateStr: string) {
   return new Date(y, m - 1, d)
 }
 
+export function formatTimestamp(iso: string) {
+  return new Date(iso).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  })
+}
+
 export function caregiverName(user: {
   firstName: string | null
   lastName: string | null

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/use-api-client'
+import { setActiveDogId } from '@/lib/active-dog'
 import type { JoinPreview } from '@/lib/api/endpoints/dogs'
 import { normalizeShareCode } from '@/lib/share-code'
 
@@ -60,6 +61,7 @@ export default function JoinPage() {
     setError(null)
     try {
       const res = await apiClient.joinByShareCode(normalizeShareCode(code))
+      setActiveDogId(res.data.id)
       router.replace(`/dogs/${res.data.id}/today`)
     } catch {
       setError('Could not join this care log. Try again.')

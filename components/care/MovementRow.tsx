@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useApiClient } from '@/hooks/use-api-client'
 import type { DailyCareActionStepRecord, DailyCareActionStatus } from '@/lib/api/endpoints/dogs'
-import { STATUS_COLORS, STATUS_LABELS, caregiverName } from '@/lib/care/display'
+import { STATUS_COLORS, STATUS_LABELS, caregiverName, formatTimestamp } from '@/lib/care/display'
 
 function MovementMedia({
   mediaUrl,
@@ -89,8 +89,12 @@ export function MovementRow({
         <p className="text-sm text-muted-foreground mt-2">{movement.notes}</p>
       )}
 
-      {movement.completedBy && (
-        <p className="text-xs text-muted-foreground mt-2">By {caregiverName(movement.completedBy)}</p>
+      {(movement.completedBy || movement.completedAt) && (
+        <p className="text-xs text-muted-foreground mt-2">
+          {movement.completedBy && <>By {caregiverName(movement.completedBy)}</>}
+          {movement.completedBy && movement.completedAt && ' · '}
+          {movement.completedAt && formatTimestamp(movement.completedAt)}
+        </p>
       )}
 
       <div className="flex flex-wrap gap-2 mt-3">
