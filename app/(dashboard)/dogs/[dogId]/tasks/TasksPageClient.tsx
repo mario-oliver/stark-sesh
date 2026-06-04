@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { ExerciseCard } from '@/components/care/ExerciseCard'
 import { CareActionCard } from '@/components/care/CareActionCard'
 import { CareActionForm } from '@/components/care/CareActionForm'
+import { ExerciseAgentDialog } from '@/components/care/ExerciseAgentDialog'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -41,6 +42,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
+  const [agentOpen, setAgentOpen] = useState(false)
   const [editingAction, setEditingAction] = useState<CareActionRecord | null>(null)
   const [deactivatingAction, setDeactivatingAction] = useState<CareActionRecord | null>(null)
   const [busy, setBusy] = useState(false)
@@ -161,16 +163,21 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">Care plan</p>
                 <p className="text-sm text-foreground mt-0.5">{plan?.name ?? '…'}</p>
               </div>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  setEditingAction(null)
-                  setFormOpen(true)
-                }}
-              >
-                Add exercise
-              </Button>
+              <div className="flex gap-2">
+                <Button type="button" size="sm" variant="outline" onClick={() => setAgentOpen(true)}>
+                  Create with AI
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    setEditingAction(null)
+                    setFormOpen(true)
+                  }}
+                >
+                  Add exercise
+                </Button>
+              </div>
             </div>
 
             {loading ? (
@@ -260,6 +267,13 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
           </>
         )}
       </div>
+
+      <ExerciseAgentDialog
+        open={agentOpen}
+        onOpenChange={setAgentOpen}
+        dogId={dogId}
+        onCommitted={loadPlan}
+      />
 
       <CareActionForm
         open={formOpen}

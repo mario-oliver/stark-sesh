@@ -119,6 +119,52 @@ export interface CreateCareActionInput {
   sortOrder?: number
 }
 
+export type ExerciseAgentSessionStatus =
+  | 'ACTIVE'
+  | 'AWAITING_INPUT'
+  | 'DRAFT_READY'
+  | 'COMMITTED'
+  | 'FAILED'
+
+export interface ProposedMovement {
+  name: string
+  description?: string | null
+  instructions?: string | null
+  sortOrder?: number
+}
+
+export interface ProposedExercise {
+  name: string
+  description?: string | null
+  category: CareActionCategory
+  frequency: CareActionFrequency
+  timeOfDay?: CareActionTimeOfDay | null
+  targetReps?: number | null
+  targetDurationSeconds?: number | null
+  instructions?: string | null
+  movements: ProposedMovement[]
+  rationale: string
+  safetyNotes: string
+  researchSummary: string
+}
+
+export interface ExerciseAgentMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export interface ExerciseAgentSessionPayload {
+  id: string
+  dogId: string
+  status: ExerciseAgentSessionStatus
+  messages: ExerciseAgentMessage[]
+  questions: string[]
+  draft: ProposedExercise | null
+  research: unknown
+  createdAt: string
+  updatedAt: string
+}
+
 export interface UpdateCareActionInput extends Partial<CreateCareActionInput> {}
 
 export interface CalendarDaySummary {
@@ -333,6 +379,31 @@ export interface DogsApi {
   getCalendar(dogId: string, month: string): Promise<{ success: boolean; data: CalendarPayload }>
   previewJoin(code: string): Promise<{ success: boolean; data: JoinPreview }>
   joinByShareCode(shareCode: string): Promise<{ success: boolean; data: DogRecord; message?: string }>
+  createExerciseAgentSession(
+    dogId: string,
+    message: string
+  ): Promise<{ success: boolean; data: ExerciseAgentSessionPayload; message?: string }>
+  getExerciseAgentSession(
+    dogId: string,
+    sessionId: string
+  ): Promise<{ success: boolean; data: ExerciseAgentSessionPayload }>
+  sendExerciseAgentMessage(
+    dogId: string,
+    sessionId: string,
+    message: string
+  ): Promise<{ success: boolean; data: ExerciseAgentSessionPayload }>
+  confirmExerciseAgentSession(
+    dogId: string,
+    sessionId: string
+  ): Promise<{
+    success: boolean
+    data: { action: CareActionRecord; status: string }
+    message?: string
+  }>
+  cancelExerciseAgentSession(
+    dogId: string,
+    sessionId: string
+  ): Promise<{ success: boolean; data: { cancelled: boolean } }>
 }
 
 export const dogsMethods = {
@@ -511,5 +582,43 @@ export const dogsMethods = {
       method: 'POST',
       data: { shareCode }
     })
+  },
+
+  async createExerciseAgentSession(this: ApiClient, dogId: string, message: string) {
+    return this.request<{ success: boolean; data: ExerciseAgentSessionPayload; message?: string }>(
+      `/v1/dogs/${dogId}/exercise-agent/sessions`,
+      { method: 'POST', data: { message } }
+    )
+  },
+
+  async getExerciseAgentSession(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{ success: boolean; data: ExerciseAgentSessionPayload }>(
+      `/v1/dogs/${dogId}/exercise-agent/sessions/${sessionId}`
+    )
+  },
+
+  async sendExerciseAgentMessage(this: ApiClient, dogId: string, sessionId: string, message: string) {
+    return this.request<{ success: boolean; data: ExerciseAgentSessionPayload }>(
+      `/v1/dogs/${dogId}/exercise-agent/sessions/${sessionId}/messages`,
+      { method: 'POST', data: { message } }
+    )
+  },
+
+  async confirmExerciseAgentSession(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{
+      success: boolean
+      data: { action: CareActionRecord; status: string }
+      message?: string
+    }>(`/v1/dogs/${dogId}/exercise-agent/sessions/${sessionId}/confirm`, {
+      method: 'POST',
+      data: {}
+    })
+  },
+
+  async cancelExerciseAgentSession(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{ success: boolean; data: { cancelled: boolean } }>(
+      `/v1/dogs/${dogId}/exercise-agent/sessions/${sessionId}`,
+      { method: 'DELETE' }
+    )
   }
 }
