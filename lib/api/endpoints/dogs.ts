@@ -42,6 +42,8 @@ export interface CareActionStepRecord {
   name: string
   description: string | null
   instructions: string | null
+  targetReps: number | null
+  targetDurationSeconds: number | null
   mediaKey: string | null
   mediaContentType: string | null
   mediaUrl: string | null
@@ -73,6 +75,8 @@ export interface CreateCareActionStepInput {
   name: string
   description?: string | null
   instructions?: string | null
+  targetReps?: number | null
+  targetDurationSeconds?: number | null
   mediaKey?: string | null
   mediaContentType?: string | null
   sortOrder?: number
@@ -87,6 +91,8 @@ export interface DailyCareActionStepRecord {
   nameSnapshot: string
   description: string | null
   instructions: string | null
+  targetReps: number | null
+  targetDurationSeconds: number | null
   mediaKey: string | null
   mediaContentType: string | null
   mediaUrl: string | null
@@ -253,6 +259,8 @@ export interface DailyCareActionRecord {
   notes: string | null
   tolerance: Tolerance | null
   issueObserved: boolean
+  targetReps: number | null
+  targetDurationSeconds: number | null
   completedBy: UserSummary | null
   steps: DailyCareActionStepRecord[]
   movementProgress: { completed: number; total: number } | null

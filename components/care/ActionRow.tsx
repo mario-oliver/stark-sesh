@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ExerciseMeasurement } from '@/components/care/ExerciseMeasurement'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useApiClient } from '@/hooks/use-api-client'
@@ -9,6 +10,7 @@ import type {
   DailyCareActionStatus,
   Tolerance
 } from '@/lib/api/endpoints/dogs'
+import { getMeasurementMode } from '@/lib/care/measurement'
 import { caregiverName, formatTimestamp } from '@/lib/care/display'
 
 export function ActionRow({
@@ -28,6 +30,10 @@ export function ActionRow({
   const [editingNote, setEditingNote] = useState(false)
   const [note, setNote] = useState(action.notes ?? '')
   const [busy, setBusy] = useState(false)
+
+  const measurementMode = getMeasurementMode(action.targetReps, action.targetDurationSeconds)
+  const isCompleted = action.status === 'COMPLETED'
+  const usesMeasurement = measurementMode !== 'checklist' && !isCompleted
 
   const update = async (body: {
     status?: DailyCareActionStatus
@@ -53,6 +59,14 @@ export function ActionRow({
         </p>
       )}
 
+      <ExerciseMeasurement
+        targetReps={action.targetReps}
+        targetDurationSeconds={action.targetDurationSeconds}
+        completed={isCompleted}
+        busy={busy}
+        onMarkDone={() => void update({ status: 'COMPLETED' })}
+      />
+
       {action.notes && !editingNote && (
         <p className="text-sm text-muted-foreground">{action.notes}</p>
       )}
@@ -66,7 +80,7 @@ export function ActionRow({
       )}
 
       <div className="flex flex-wrap gap-2">
-        {action.status !== 'COMPLETED' && (
+        {action.status !== 'COMPLETED' && !usesMeasurement && (
           <Button
             type="button"
             variant="outline"

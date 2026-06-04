@@ -218,30 +218,38 @@ export function CareActionForm({
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="targetReps">Target reps</Label>
-              <Input
-                id="targetReps"
-                type="number"
-                min={0}
-                value={form.targetReps}
-                onChange={e => setForm(f => ({ ...f, targetReps: e.target.value }))}
-                placeholder="Optional"
-              />
+          {(action?.steps?.length ?? 0) > 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Set target reps or hold duration on each movement below.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="targetReps">Target reps</Label>
+                <Input
+                  id="targetReps"
+                  type="number"
+                  min={0}
+                  value={form.targetReps}
+                  onChange={e => setForm(f => ({ ...f, targetReps: e.target.value }))}
+                  placeholder="Optional"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="targetDuration">Duration (sec)</Label>
+                <Input
+                  id="targetDuration"
+                  type="number"
+                  min={0}
+                  value={form.targetDurationSeconds}
+                  onChange={e =>
+                    setForm(f => ({ ...f, targetDurationSeconds: e.target.value }))
+                  }
+                  placeholder="Optional"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="targetDuration">Duration (sec)</Label>
-              <Input
-                id="targetDuration"
-                type="number"
-                min={0}
-                value={form.targetDurationSeconds}
-                onChange={e => setForm(f => ({ ...f, targetDurationSeconds: e.target.value }))}
-                placeholder="Optional"
-              />
-            </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="instructions">Instructions</Label>

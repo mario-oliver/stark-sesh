@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { ExerciseMeasurement } from '@/components/care/ExerciseMeasurement'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useApiClient } from '@/hooks/use-api-client'
 import type { DailyCareActionStepRecord, DailyCareActionStatus } from '@/lib/api/endpoints/dogs'
+import { getMeasurementMode } from '@/lib/care/measurement'
 import { STATUS_COLORS, STATUS_LABELS, caregiverName, formatTimestamp } from '@/lib/care/display'
 
 function MovementMedia({
@@ -55,6 +57,13 @@ export function MovementRow({
   const [note, setNote] = useState(movement.notes ?? '')
   const [busy, setBusy] = useState(false)
 
+  const measurementMode = getMeasurementMode(
+    movement.targetReps,
+    movement.targetDurationSeconds
+  )
+  const isCompleted = movement.status === 'COMPLETED'
+  const usesMeasurement = measurementMode !== 'checklist' && !isCompleted
+
   const update = async (body: { status?: DailyCareActionStatus; notes?: string }) => {
     if (!isReady) return
     setBusy(true)
@@ -74,90 +83,98 @@ export function MovementRow({
   return (
     <li>
       <div className={embedded ? embeddedStyles : 'border border-border rounded-lg p-4 bg-card'}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="font-medium text-foreground">{movement.nameSnapshot}</p>
-          {movement.description && (
-            <p className="text-sm text-muted-foreground mt-2">{movement.description}</p>
-          )}
-          {movement.instructions && (
-            <p className="text-xs text-muted-foreground mt-2">{movement.instructions}</p>
-          )}
-          <MovementMedia
-            mediaUrl={movement.mediaUrl}
-            mediaContentType={movement.mediaContentType}
-          />
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-foreground">{movement.nameSnapshot}</p>
+            {movement.description && (
+              <p className="text-sm text-muted-foreground mt-2">{movement.description}</p>
+            )}
+            {movement.instructions && (
+              <p className="text-xs text-muted-foreground mt-2">{movement.instructions}</p>
+            )}
+            <MovementMedia
+              mediaUrl={movement.mediaUrl}
+              mediaContentType={movement.mediaContentType}
+            />
+          </div>
+          <span
+            className={`text-xs px-2 py-1 rounded-full shrink-0 ${STATUS_COLORS[movement.status]}`}
+          >
+            {STATUS_LABELS[movement.status]}
+          </span>
         </div>
-        <span
-          className={`text-xs px-2 py-1 rounded-full shrink-0 ${STATUS_COLORS[movement.status]}`}
-        >
-          {STATUS_LABELS[movement.status]}
-        </span>
-      </div>
 
-      {movement.notes && !editingNote && (
-        <p className="text-sm text-muted-foreground mt-2">{movement.notes}</p>
-      )}
+        <ExerciseMeasurement
+          targetReps={movement.targetReps}
+          targetDurationSeconds={movement.targetDurationSeconds}
+          completed={isCompleted}
+          busy={busy}
+          onMarkDone={() => void update({ status: 'COMPLETED' })}
+        />
 
-      {(movement.completedBy || movement.completedAt) && (
-        <p className="text-xs text-muted-foreground mt-2">
-          {movement.completedBy && <>By {caregiverName(movement.completedBy)}</>}
-          {movement.completedBy && movement.completedAt && ' · '}
-          {movement.completedAt && formatTimestamp(movement.completedAt)}
-        </p>
-      )}
+        {movement.notes && !editingNote && (
+          <p className="text-sm text-muted-foreground mt-2">{movement.notes}</p>
+        )}
 
-      <div className="flex flex-wrap gap-2 mt-3">
-        {movement.status !== 'COMPLETED' && (
+        {(movement.completedBy || movement.completedAt) && (
+          <p className="text-xs text-muted-foreground mt-2">
+            {movement.completedBy && <>By {caregiverName(movement.completedBy)}</>}
+            {movement.completedBy && movement.completedAt && ' · '}
+            {movement.completedAt && formatTimestamp(movement.completedAt)}
+          </p>
+        )}
+
+        <div className="flex flex-wrap gap-2 mt-3">
+          {movement.status !== 'COMPLETED' && !usesMeasurement && (
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              disabled={busy}
+              onClick={() => void update({ status: 'COMPLETED' })}
+            >
+              Mark done
+            </Button>
+          )}
+          {movement.status !== 'SKIPPED' && (
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              disabled={busy}
+              onClick={() => void update({ status: 'SKIPPED' })}
+            >
+              Skip
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
             size="xs"
-            disabled={busy}
-            onClick={() => void update({ status: 'COMPLETED' })}
+            onClick={() => setEditingNote(v => !v)}
           >
-            Mark done
-          </Button>
-        )}
-        {movement.status !== 'SKIPPED' && (
-          <Button
-            type="button"
-            variant="outline"
-            size="xs"
-            disabled={busy}
-            onClick={() => void update({ status: 'SKIPPED' })}
-          >
-            Skip
-          </Button>
-        )}
-        <Button
-          type="button"
-          variant="outline"
-          size="xs"
-          onClick={() => setEditingNote(v => !v)}
-        >
-          {editingNote ? 'Cancel' : 'Note'}
-        </Button>
-      </div>
-
-      {editingNote && (
-        <div className="mt-2 flex gap-2">
-          <Input
-            value={note}
-            onChange={e => setNote(e.target.value)}
-            className="flex-1"
-            placeholder="Add a note"
-          />
-          <Button
-            type="button"
-            size="xs"
-            disabled={busy}
-            onClick={() => void update({ notes: note }).then(() => setEditingNote(false))}
-          >
-            Save
+            {editingNote ? 'Cancel' : 'Note'}
           </Button>
         </div>
-      )}
+
+        {editingNote && (
+          <div className="mt-2 flex gap-2">
+            <Input
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              className="flex-1"
+              placeholder="Add a note"
+            />
+            <Button
+              type="button"
+              size="xs"
+              disabled={busy}
+              onClick={() => void update({ notes: note }).then(() => setEditingNote(false))}
+            >
+              Save
+            </Button>
+          </div>
+        )}
       </div>
     </li>
   )
