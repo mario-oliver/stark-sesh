@@ -138,8 +138,8 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
   const { dog, dailyLog, progress } = payload
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-40">
-      <div className="max-w-lg mx-auto px-4 pt-6">
+    <div className="min-h-screen bg-background text-foreground pb-44">
+      <div className="max-w-lg mx-auto px-4 pt-6 pb-6">
         <Link href="/today" className="text-sm text-primary hover:text-primary/80 underline">
           ← Care
         </Link>
@@ -166,12 +166,12 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
 
         {error && <p className="text-destructive text-sm mb-4">{error}</p>}
 
-        <section className="mb-8">
+        <section className="mb-10">
           <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Exercises today</h2>
-          <p className="text-xs text-muted-foreground mb-3">
+          <p className="text-xs text-muted-foreground mb-4">
             Speak your update below — tap an exercise to expand and see details.
           </p>
-          <ul className="space-y-3">
+          <ul className="space-y-4">
             {dailyLog.dailyCareActions.map(action => (
               <ExerciseCard key={action.id} action={action} dogId={dogId} onUpdated={loadToday} />
             ))}
@@ -179,9 +179,9 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
         </section>
 
         {dailyLog.healthObservations.length > 0 && (
-          <section className="mb-8">
+          <section className="mb-10">
             <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Observations</h2>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {dailyLog.healthObservations.map(obs => (
                 <ObservationCard key={obs.id} obs={obs} />
               ))}
@@ -190,9 +190,9 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
         )}
 
         {dailyLog.voiceNotes.length > 0 && (
-          <section className="mb-8">
+          <section className="mb-10">
             <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Voice updates</h2>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {dailyLog.voiceNotes.map(note => (
                 <VoiceNoteCard key={note.id} note={note} />
               ))}

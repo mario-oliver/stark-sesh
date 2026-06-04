@@ -83,11 +83,12 @@ export function HeaderNav() {
   const isCare =
     pathname === '/today' ||
     pathname === '/calendar' ||
+    pathname === '/history' ||
     pathname.includes('/today') ||
-    pathname.includes('/calendar')
+    pathname.includes('/calendar') ||
+    pathname.includes('/history')
   const isExercises = pathname === '/exercises' || pathname === '/tasks' || pathname.includes('/tasks')
   const isProfile = pathname === '/profile' || pathname.includes('/profile')
-  const isHistory = pathname === '/history' || pathname.includes('/history')
 
   return (
     <>
@@ -99,9 +100,6 @@ export function HeaderNav() {
       </Link>
       <Link href="/profile" className={navLinkClass(isProfile)}>
         Profile
-      </Link>
-      <Link href="/history" className={navLinkClass(isHistory)}>
-        History
       </Link>
       <DogSwitcher />
     </>

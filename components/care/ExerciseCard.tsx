@@ -62,7 +62,7 @@ export function ExerciseCard({
           </CollapsibleTrigger>
 
           <CollapsibleContent>
-            <CardContent className="pt-0 pb-4 space-y-4">
+            <CardContent className="pt-0 pb-5 px-4 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-xs text-muted-foreground">
                   {action.categorySnapshot.replace(/_/g, ' ')}
@@ -81,13 +81,15 @@ export function ExerciseCard({
               )}
 
               {hasMovements ? (
-                <ul className="space-y-3">
-                  {action.steps.map(movement => (
+                <ul className="space-y-2 rounded-lg bg-secondary/20 p-2">
+                  {action.steps.map((movement, index) => (
                     <MovementRow
                       key={movement.id}
                       movement={movement}
                       dogId={dogId}
                       onUpdated={onUpdated}
+                      embedded
+                      variant={index % 2 === 0 ? 'warm' : 'cool'}
                     />
                   ))}
                 </ul>

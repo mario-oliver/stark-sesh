@@ -5,11 +5,17 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { DogProfileFields } from '@/components/dog/DogProfileFields'
 import { useApiClient } from '@/hooks/use-api-client'
 import { resolveDogId, setActiveDogId } from '@/lib/active-dog'
 import { DEFAULT_ROUTINE_ITEMS, DEFAULT_ROUTINE_NAME } from '@/lib/care/default-routine'
+import {
+  emptyDogProfileForm,
+  formatDogSex,
+  profileFormToApiPayload,
+  validateDogProfileForm,
+  type DogProfileFormValues
+} from '@/lib/dog/profile-form'
 import { uploadDogPhotoToS3 } from '@/lib/upload-dog-photo'
 
 export default function OnboardingPage() {
@@ -19,9 +25,7 @@ export default function OnboardingPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [step, setStep] = useState<1 | 2>(1)
-  const [name, setName] = useState('')
-  const [breed, setBreed] = useState('')
-  const [age, setAge] = useState('')
+  const [form, setForm] = useState<DogProfileFormValues>(emptyDogProfileForm())
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoKey, setPhotoKey] = useState<string | null>(null)
   const [photoUploading, setPhotoUploading] = useState(false)
@@ -71,20 +75,16 @@ export default function OnboardingPage() {
 
   const handleCreate = async () => {
     if (!isReady) return
+    const validationError = validateDogProfileForm(form)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
     setBusy(true)
     setError(null)
     try {
-      const parsedAge = age.trim() ? Number.parseInt(age, 10) : null
-      if (age.trim() && (Number.isNaN(parsedAge) || parsedAge! < 0)) {
-        setError('Enter a valid age in years, or leave it blank.')
-        setBusy(false)
-        return
-      }
-
       const res = await apiClient.createDog({
-        name: name.trim(),
-        breed: breed.trim() || null,
-        age: parsedAge,
+        ...profileFormToApiPayload(form),
         photoKey
       })
       setActiveDogId(res.data.id)
@@ -112,7 +112,7 @@ export default function OnboardingPage() {
         </h1>
         <p className="text-muted-foreground text-sm mt-2">
           {step === 1
-            ? 'We’ll attach this dog to your account so you can track PT and daily care.'
+            ? 'Tell us about your dog — the basics plus anything that helps with PT and daily care.'
             : 'We’ll start you on a mobility and strength plan you can adjust later.'}
         </p>
 
@@ -128,8 +128,9 @@ export default function OnboardingPage() {
             className="mt-8 space-y-6"
             onSubmit={e => {
               e.preventDefault()
-              if (!name.trim()) {
-                setError('What’s your dog’s name?')
+              const validationError = validateDogProfileForm(form)
+              if (validationError) {
+                setError(validationError)
                 return
               }
               if (photoUploading) {
@@ -188,41 +189,10 @@ export default function OnboardingPage() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="dog-name">
-                Name <span className="text-primary">*</span>
-              </Label>
-              <Input
-                id="dog-name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="e.g. Stark"
-                autoFocus
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dog-breed">Breed</Label>
-              <Input
-                id="dog-breed"
-                value={breed}
-                onChange={e => setBreed(e.target.value)}
-                placeholder="Optional"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dog-age">Age (years)</Label>
-              <Input
-                id="dog-age"
-                type="number"
-                min={0}
-                max={30}
-                value={age}
-                onChange={e => setAge(e.target.value)}
-                placeholder="Optional"
-              />
-            </div>
+            <DogProfileFields
+              form={form}
+              onChange={updates => setForm(prev => ({ ...prev, ...updates }))}
+            />
 
             <Button type="submit" disabled={photoUploading} className="w-full">
               Continue
@@ -252,15 +222,23 @@ export default function OnboardingPage() {
                 </div>
               ) : (
                 <div className="size-20 rounded-full bg-muted flex items-center justify-center text-xl font-medium text-muted-foreground shrink-0">
-                  {name.trim().charAt(0).toUpperCase() || '?'}
+                  {form.name.trim().charAt(0).toUpperCase() || '?'}
                 </div>
               )}
               <div>
-                <p className="font-medium">{name.trim()}</p>
+                <p className="font-medium">{form.name.trim()}</p>
                 <p className="text-sm text-muted-foreground">
-                  {[breed.trim(), age.trim() ? `${age} yrs` : null].filter(Boolean).join(' · ') ||
-                    'Care profile'}
+                  {[
+                    form.breed.trim(),
+                    form.age.trim() ? `${form.age} yrs` : null,
+                    formatDogSex(form.sex || null)
+                  ]
+                    .filter(Boolean)
+                    .join(' · ') || 'Care profile'}
                 </p>
+                {form.condition.trim() && (
+                  <p className="text-xs text-muted-foreground mt-1">{form.condition.trim()}</p>
+                )}
               </div>
             </div>
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { DogSubNav } from '@/components/dog/DogSubNav'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useActiveDog } from '@/hooks/use-active-dog'
 
@@ -32,29 +33,38 @@ export function HistoryClient({ dogId }: { dogId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground max-w-lg mx-auto px-4 py-8">
-      <Link href="/today" className="text-sm text-primary underline">
-        ← Care
-      </Link>
-      <h1 className="text-2xl font-semibold mt-4">Care history</h1>
+    <div className="min-h-screen bg-background text-foreground pb-12">
+      <div className="max-w-lg mx-auto px-4 pt-6">
+        <Link href="/today" className="text-sm text-primary hover:text-primary/80 underline">
+          ← Care
+        </Link>
 
-      <ul className="mt-6 space-y-3">
-        {logs.map(log => (
-          <li key={log.id}>
-            <Link
-              href={`/dogs/${dogId}/calendar?date=${dateParam(log.date)}`}
-              className="block border border-border rounded-lg p-4 bg-card hover:border-primary/50 transition-colors"
-            >
-              <p className="font-medium">{new Date(log.date).toLocaleDateString()}</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {log.completedCount}/{log.totalActions} actions
-              </p>
-              {log.summary && <p className="text-sm text-muted-foreground mt-2">{log.summary}</p>}
-            </Link>
-          </li>
-        ))}
-        {logs.length === 0 && <p className="text-muted-foreground">No past logs yet.</p>}
-      </ul>
+        <header className="mt-4 mb-2">
+          <p className="text-xs uppercase tracking-widest text-accent-foreground font-medium">Care</p>
+          <h1 className="text-2xl font-semibold mt-1">History</h1>
+          <p className="text-sm text-muted-foreground mt-1">Past daily care logs</p>
+        </header>
+
+        <DogSubNav dogId={dogId} />
+
+        <ul className="space-y-3">
+          {logs.map(log => (
+            <li key={log.id}>
+              <Link
+                href={`/dogs/${dogId}/calendar?date=${dateParam(log.date)}`}
+                className="block border border-border rounded-lg p-4 bg-card hover:border-primary/50 transition-colors"
+              >
+                <p className="font-medium">{new Date(log.date).toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {log.completedCount}/{log.totalActions} exercises
+                </p>
+                {log.summary && <p className="text-sm text-muted-foreground mt-2">{log.summary}</p>}
+              </Link>
+            </li>
+          ))}
+          {logs.length === 0 && <p className="text-muted-foreground">No past logs yet.</p>}
+        </ul>
+      </div>
     </div>
   )
 }

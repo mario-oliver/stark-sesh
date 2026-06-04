@@ -140,11 +140,18 @@ export interface UserSummary {
   lastName: string | null
 }
 
+export type DogSex = 'MALE' | 'FEMALE' | 'UNKNOWN'
+
 export interface DogRecord {
   id: string
   name: string
   breed: string | null
   age: number | null
+  sex: DogSex | null
+  weightLbs: number | null
+  condition: string | null
+  vetName: string | null
+  vetPhone: string | null
   photoUrl: string | null
   notes: string | null
   createdAt: string
@@ -165,6 +172,11 @@ export interface CreateDogInput {
   name: string
   breed?: string | null
   age?: number | null
+  sex?: DogSex | null
+  weightLbs?: number | null
+  condition?: string | null
+  vetName?: string | null
+  vetPhone?: string | null
   /** S3 object key from presigned upload */
   photoKey?: string | null
   notes?: string | null
@@ -174,6 +186,11 @@ export interface UpdateDogInput {
   name?: string
   breed?: string | null
   age?: number | null
+  sex?: DogSex | null
+  weightLbs?: number | null
+  condition?: string | null
+  vetName?: string | null
+  vetPhone?: string | null
   photoKey?: string | null
   notes?: string | null
 }

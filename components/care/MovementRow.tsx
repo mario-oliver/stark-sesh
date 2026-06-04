@@ -40,11 +40,15 @@ function MovementMedia({
 export function MovementRow({
   movement,
   dogId,
-  onUpdated
+  onUpdated,
+  embedded = false,
+  variant = 'warm'
 }: {
   movement: DailyCareActionStepRecord
   dogId: string
   onUpdated: () => void
+  embedded?: boolean
+  variant?: 'warm' | 'cool'
 }) {
   const { apiClient, isReady } = useApiClient()
   const [editingNote, setEditingNote] = useState(false)
@@ -62,8 +66,14 @@ export function MovementRow({
     }
   }
 
+  const embeddedStyles =
+    variant === 'warm'
+      ? 'rounded-md bg-accent/25 border-l-2 border-l-primary/50 px-3 py-3'
+      : 'rounded-md bg-secondary/50 border-l-2 border-l-secondary-foreground/25 px-3 py-3'
+
   return (
-    <li className="border border-border rounded-lg p-4 bg-card">
+    <li>
+      <div className={embedded ? embeddedStyles : 'border border-border rounded-lg p-4 bg-card'}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="font-medium text-foreground">{movement.nameSnapshot}</p>
@@ -148,6 +158,7 @@ export function MovementRow({
           </Button>
         </div>
       )}
+      </div>
     </li>
   )
 }
