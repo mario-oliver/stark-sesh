@@ -3,7 +3,7 @@
 import type { CareActionRecord } from '@/lib/api/endpoints/dogs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CATEGORY_LABELS, formatScheduleLabel } from '@/lib/care/labels'
+import { BUCKET_LABELS, CATEGORY_LABELS, formatScheduleLabel } from '@/lib/care/labels'
 
 export function CareActionCard({
   action,
@@ -20,6 +20,9 @@ export function CareActionCard({
         <div className="min-w-0 flex-1">
           <p className="font-medium text-foreground">{action.name}</p>
           <div className="flex flex-wrap gap-2 mt-2">
+            {action.bucket && (
+              <Badge variant="default">{BUCKET_LABELS[action.bucket]}</Badge>
+            )}
             <Badge variant="outline">
               {CATEGORY_LABELS[action.category]}
             </Badge>

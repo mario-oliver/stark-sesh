@@ -1,8 +1,20 @@
 import type {
   CareActionCategory,
   CareActionFrequency,
-  CareActionTimeOfDay
+  CareActionTimeOfDay,
+  CareBucket
 } from '@/lib/api/endpoints/dogs'
+
+export const BUCKET_LABELS: Record<CareBucket, string> = {
+  ACTIVITY: 'Activity',
+  MOBILITY: 'Mobility',
+  RECOVERY: 'Recovery'
+}
+
+export const BUCKET_OPTIONS = Object.entries(BUCKET_LABELS).map(([value, label]) => ({
+  value: value as CareBucket,
+  label
+}))
 
 export const CATEGORY_LABELS: Record<CareActionCategory, string> = {
   STRETCH: 'Stretch',

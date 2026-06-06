@@ -2,20 +2,20 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
-import { ExerciseCard } from '@/components/care/ExerciseCard'
+import { BucketSummaryCard } from '@/components/care/BucketSummaryCard'
 import { DogHero } from '@/components/dog/DogHero'
 import { DogSubNav } from '@/components/dog/DogSubNav'
 import { VoiceRecordBar } from '@/components/voice/VoiceRecordBar'
 import { Button } from '@/components/ui/button'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useActiveDog } from '@/hooks/use-active-dog'
-import type { HealthObservationRecord, TodayPayload, VoiceNoteRecord } from '@/lib/api/endpoints/dogs'
+import type { TodayPayload, VoiceNoteRecord } from '@/lib/api/endpoints/dogs'
 import { caregiverName, formatDisplayDate, formatTimestamp, localDateString } from '@/lib/care/display'
 
 function VoiceNoteCard({ note }: { note: VoiceNoteRecord }) {
   const [expanded, setExpanded] = useState(false)
   return (
-    <li className="border border-border rounded-lg p-3 bg-card/80 bg-gradient-to-br from-card to-accent/30">
+    <li className="border border-border rounded-lg p-3 bg-card/80">
       <div className="flex justify-between items-start gap-2">
         <p className="text-sm text-foreground line-clamp-2">{note.transcript || '(no transcript)'}</p>
         <span className="text-xs text-muted-foreground shrink-0">{note.processingStatus}</span>
@@ -33,28 +33,9 @@ function VoiceNoteCard({ note }: { note: VoiceNoteRecord }) {
       >
         {expanded ? 'Hide details' : 'View transcript'}
       </Button>
-      {expanded && <pre className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap">{note.transcript}</pre>}
-      {expanded && note.extraction != null && (
-        <pre className="text-xs text-muted-foreground mt-2 overflow-x-auto">
-          {JSON.stringify(note.extraction, null, 2)}
-        </pre>
+      {expanded && (
+        <pre className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap">{note.transcript}</pre>
       )}
-    </li>
-  )
-}
-
-function ObservationCard({ obs }: { obs: HealthObservationRecord }) {
-  return (
-    <li className="border border-border rounded-lg p-3 bg-card/80 bg-gradient-to-br from-card to-accent/30">
-      <p className="text-sm font-medium text-foreground">
-        {obs.type.replace(/_/g, ' ')}
-        {obs.severity && <span className="text-muted-foreground font-normal"> · {obs.severity.toLowerCase()}</span>}
-      </p>
-      <p className="text-sm text-muted-foreground mt-1">{obs.note}</p>
-      {obs.bodyArea && <p className="text-xs text-muted-foreground mt-1">{obs.bodyArea}</p>}
-      <p className="text-xs text-muted-foreground mt-1">
-        {caregiverName(obs.user)} · {formatTimestamp(obs.observedAt ?? obs.createdAt)}
-      </p>
     </li>
   )
 }
@@ -100,13 +81,7 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
     setIsTranscribing(true)
     try {
       const res = await apiClient.transcribeVoiceNote(dogId, wavBlob, { date })
-      const data = res.data
-      setPayload({
-        dog: data.dog,
-        date: data.date,
-        dailyLog: data.dailyLog,
-        progress: data.progress
-      })
+      setPayload(res.data)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Recording failed')
     } finally {
@@ -135,7 +110,8 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
 
   if (!payload) return null
 
-  const { dog, dailyLog, progress } = payload
+  const { dog, dailyLog, buckets } = payload
+  const recentNote = dailyLog.voiceNotes[0]
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-44">
@@ -146,15 +122,12 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
 
         <header className="mt-4 mb-2 flex flex-col items-center text-center">
           <p className="text-xs uppercase tracking-widest text-accent-foreground font-medium w-full text-left">
-            Care
+            Today
           </p>
           <div className="mt-3 w-full">
             <DogHero dogId={dog.id} photoUrl={dog.photoUrl} name={dog.name} />
           </div>
           <p className="text-muted-foreground text-sm mt-4">{formatDisplayDate(payload.date)}</p>
-          <p className="text-primary font-medium text-sm mt-2 bg-secondary/80 rounded-full px-4 py-1">
-            {progress.completed} of {progress.total} exercises done
-          </p>
           {dailyLog.summary && (
             <p className="text-sm text-muted-foreground mt-3 border-l-2 border-accent-foreground pl-3 text-left w-full">
               {dailyLog.summary}
@@ -166,34 +139,31 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
 
         {error && <p className="text-destructive text-sm mb-4">{error}</p>}
 
-        <section className="mb-10">
-          <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Exercises today</h2>
-          <p className="text-xs text-muted-foreground mb-4">
-            Speak your update below — tap an exercise to expand and see details.
-          </p>
-          <ul className="space-y-4">
-            {dailyLog.dailyCareActions.map(action => (
-              <ExerciseCard key={action.id} action={action} dogId={dogId} onUpdated={loadToday} />
-            ))}
-          </ul>
+        <section className="mb-8 space-y-3">
+          <BucketSummaryCard bucket="ACTIVITY" data={buckets.activity} dogId={dogId} />
+          <BucketSummaryCard bucket="MOBILITY" data={buckets.mobility} dogId={dogId} />
+          <BucketSummaryCard bucket="RECOVERY" data={buckets.recovery} dogId={dogId} />
         </section>
 
-        {dailyLog.healthObservations.length > 0 && (
-          <section className="mb-10">
-            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Observations</h2>
-            <ul className="space-y-3">
-              {dailyLog.healthObservations.map(obs => (
-                <ObservationCard key={obs.id} obs={obs} />
-              ))}
-            </ul>
+        {recentNote && (
+          <section className="mb-8">
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+              Recent note
+            </h2>
+            <p className="text-sm text-muted-foreground line-clamp-3">
+              &ldquo;{recentNote.transcript.slice(0, 200)}
+              {recentNote.transcript.length > 200 ? '…' : ''}&rdquo;
+            </p>
           </section>
         )}
 
-        {dailyLog.voiceNotes.length > 0 && (
+        {dailyLog.voiceNotes.length > 1 && (
           <section className="mb-10">
-            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Voice updates</h2>
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
+              Voice updates
+            </h2>
             <ul className="space-y-3">
-              {dailyLog.voiceNotes.map(note => (
+              {dailyLog.voiceNotes.slice(1).map(note => (
                 <VoiceNoteCard key={note.id} note={note} />
               ))}
             </ul>

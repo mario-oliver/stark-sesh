@@ -32,6 +32,10 @@ export type CareActionCategory =
   | 'GENERAL_CARE'
   | 'OBSERVATION_CHECKPOINT'
 
+export type CareBucket = 'ACTIVITY' | 'MOBILITY' | 'RECOVERY'
+
+export type DailyTaskSource = 'PLAN' | 'AD_HOC' | 'LLM_EXTRACTED' | 'PLAN_VARIATION'
+
 export type CareActionFrequency = 'DAILY' | 'EVERY_OTHER_DAY' | 'WEEKLY' | 'AS_NEEDED'
 
 export type CareActionTimeOfDay = 'MORNING' | 'EVENING' | 'ANYTIME'
@@ -40,6 +44,7 @@ export interface CareActionStepRecord {
   id: string
   careActionId: string
   name: string
+  bucket: CareBucket | null
   description: string | null
   instructions: string | null
   targetReps: number | null
@@ -59,6 +64,7 @@ export interface CareActionRecord {
   name: string
   description: string | null
   category: CareActionCategory
+  bucket: CareBucket | null
   frequency: CareActionFrequency
   timeOfDay: CareActionTimeOfDay | null
   targetReps: number | null
@@ -73,6 +79,7 @@ export interface CareActionRecord {
 
 export interface CreateCareActionStepInput {
   name: string
+  bucket?: CareBucket | null
   description?: string | null
   instructions?: string | null
   targetReps?: number | null
@@ -117,6 +124,7 @@ export interface CreateCareActionInput {
   name: string
   description?: string | null
   category: CareActionCategory
+  bucket?: CareBucket | null
   frequency: CareActionFrequency
   timeOfDay?: CareActionTimeOfDay | null
   targetReps?: number | null
@@ -283,6 +291,7 @@ export interface VoiceNoteRecord {
 export interface HealthObservationRecord {
   id: string
   type: HealthObservationType
+  bucket: CareBucket | null
   severity: string | null
   bodyArea: string | null
   note: string
@@ -291,15 +300,76 @@ export interface HealthObservationRecord {
   user: UserSummary
 }
 
+export interface BucketScore {
+  score: number
+  label: string
+  summary: string
+  reasons: string[]
+  signals?: string[]
+  computedAt: string
+}
+
+export interface DailyTaskRecord {
+  id: string
+  dailyCareLogId: string
+  bucket: CareBucket
+  source: DailyTaskSource
+  nameSnapshot: string
+  descriptionSnapshot: string | null
+  instructionsSnapshot: string | null
+  status: DailyCareActionStatus
+  completedAt: string | null
+  completedByUserId: string | null
+  notes: string | null
+  targetReps: number | null
+  actualReps: number | null
+  targetDurationSeconds: number | null
+  actualDurationSeconds: number | null
+  careActionId: string | null
+  careActionStepId: string | null
+  substitutedForTaskId: string | null
+  substitutedFor: { id: string; nameSnapshot: string } | null
+  metadata: unknown
+  extractionConfidence: number | null
+  needsReview: boolean
+  sortOrder: number
+  mediaKey: string | null
+  mediaContentType: string | null
+  mediaUrl: string | null
+  completedBy: UserSummary | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BucketPayload {
+  tasks: DailyTaskRecord[]
+  observations: HealthObservationRecord[]
+  progress?: { completed: number; total: number }
+  score: BucketScore | null
+}
+
 export interface TodayPayload {
   dog: DogRecord
   date: string
   dailyLog: {
     id: string
     summary: string | null
+    bucketScores: {
+      activity?: BucketScore
+      mobility?: BucketScore
+      recovery?: BucketScore
+    } | null
+    scoreComputedAt: string | null
+    scoreInputVersion: string | null
+    latestVoiceNoteAt: string | null
     dailyCareActions: DailyCareActionRecord[]
     voiceNotes: VoiceNoteRecord[]
     healthObservations: HealthObservationRecord[]
+  }
+  buckets: {
+    activity: BucketPayload
+    mobility: BucketPayload
+    recovery: BucketPayload
   }
   progress: { completed: number; total: number }
 }
@@ -384,6 +454,39 @@ export interface DogsApi {
     stepId: string,
     body: { status?: DailyCareActionStatus; notes?: string }
   ): Promise<{ success: boolean; data: DailyCareActionStepRecord }>
+  updateDailyTask(
+    dogId: string,
+    taskId: string,
+    body: {
+      status?: DailyCareActionStatus
+      notes?: string
+      actualReps?: number | null
+      actualDurationSeconds?: number | null
+      needsReview?: boolean
+    }
+  ): Promise<{ success: boolean; data: DailyTaskRecord }>
+  createDailyTask(
+    dogId: string,
+    body: {
+      dailyCareLogId?: string
+      date?: string
+      bucket: CareBucket
+      name: string
+      description?: string | null
+      notes?: string | null
+      targetReps?: number | null
+      targetDurationSeconds?: number | null
+    }
+  ): Promise<{ success: boolean; data: DailyTaskRecord }>
+  reviewDailyTask(
+    dogId: string,
+    taskId: string,
+    body: { accept: boolean; status?: DailyCareActionStatus }
+  ): Promise<{ success: boolean; data: DailyTaskRecord | { deleted: boolean } }>
+  recomputeScores(
+    dogId: string,
+    logId: string
+  ): Promise<{ success: boolean; data: TodayPayload['dailyLog']['bucketScores'] }>
   getCalendar(dogId: string, month: string): Promise<{ success: boolean; data: CalendarPayload }>
   previewJoin(code: string): Promise<{ success: boolean; data: JoinPreview }>
   joinByShareCode(shareCode: string): Promise<{ success: boolean; data: DogRecord; message?: string }>
@@ -569,6 +672,63 @@ export const dogsMethods = {
     return this.request<{ success: boolean; data: DailyCareActionStepRecord }>(
       `/v1/dogs/${dogId}/daily-action-steps/${stepId}`,
       { method: 'PATCH', data: body }
+    )
+  },
+
+  async updateDailyTask(
+    this: ApiClient,
+    dogId: string,
+    taskId: string,
+    body: {
+      status?: DailyCareActionStatus
+      notes?: string
+      actualReps?: number | null
+      actualDurationSeconds?: number | null
+      needsReview?: boolean
+    }
+  ) {
+    return this.request<{ success: boolean; data: DailyTaskRecord }>(
+      `/v1/dogs/${dogId}/daily-tasks/${taskId}`,
+      { method: 'PATCH', data: body }
+    )
+  },
+
+  async createDailyTask(
+    this: ApiClient,
+    dogId: string,
+    body: {
+      dailyCareLogId?: string
+      date?: string
+      bucket: CareBucket
+      name: string
+      description?: string | null
+      notes?: string | null
+      targetReps?: number | null
+      targetDurationSeconds?: number | null
+    }
+  ) {
+    return this.request<{ success: boolean; data: DailyTaskRecord }>(
+      `/v1/dogs/${dogId}/daily-tasks`,
+      { method: 'POST', data: body }
+    )
+  },
+
+  async reviewDailyTask(
+    this: ApiClient,
+    dogId: string,
+    taskId: string,
+    body: { accept: boolean; status?: DailyCareActionStatus }
+  ) {
+    return this.request<{ success: boolean; data: DailyTaskRecord | { deleted: boolean } }>(
+      `/v1/dogs/${dogId}/daily-tasks/${taskId}/review`,
+      { method: 'PATCH', data: body }
+    )
+  },
+
+  async recomputeScores(this: ApiClient, dogId: string, logId: string) {
+    return this.request<{ success: boolean; data: TodayPayload['dailyLog']['bucketScores'] }>(
+      `/v1/dogs/${dogId}/daily-logs/${logId}/recompute-scores`,
+      { method: 'POST' }
     )
   },
 

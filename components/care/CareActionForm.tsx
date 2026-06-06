@@ -21,10 +21,12 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import type {
   CareActionRecord,
+  CareBucket,
   CreateCareActionInput,
   UpdateCareActionInput
 } from '@/lib/api/endpoints/dogs'
 import {
+  BUCKET_OPTIONS,
   CATEGORY_OPTIONS,
   FREQUENCY_OPTIONS,
   TIME_OF_DAY_OPTIONS
@@ -35,6 +37,7 @@ type FormState = {
   name: string
   description: string
   category: CreateCareActionInput['category']
+  bucket: CareBucket
   frequency: CreateCareActionInput['frequency']
   timeOfDay: CreateCareActionInput['timeOfDay']
   targetReps: string
@@ -47,6 +50,7 @@ function emptyForm(): FormState {
     name: '',
     description: '',
     category: 'GENERAL_CARE',
+    bucket: 'ACTIVITY',
     frequency: 'DAILY',
     timeOfDay: 'ANYTIME',
     targetReps: '',
@@ -60,6 +64,7 @@ function formFromAction(action: CareActionRecord): FormState {
     name: action.name,
     description: action.description ?? '',
     category: action.category,
+    bucket: action.bucket ?? 'ACTIVITY',
     frequency: action.frequency,
     timeOfDay: action.timeOfDay ?? 'ANYTIME',
     targetReps: action.targetReps?.toString() ?? '',
@@ -73,6 +78,7 @@ function toPayload(form: FormState): CreateCareActionInput {
     name: form.name.trim(),
     description: form.description.trim() || null,
     category: form.category,
+    bucket: form.bucket,
     frequency: form.frequency,
     timeOfDay: form.timeOfDay || null,
     targetReps: form.targetReps.trim() ? Number.parseInt(form.targetReps, 10) : null,
@@ -154,6 +160,25 @@ export function CareActionForm({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Bucket</Label>
+              <Select
+                value={form.bucket}
+                onValueChange={v => setForm(f => ({ ...f, bucket: v as CareBucket }))}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BUCKET_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label>Category</Label>
               <Select
