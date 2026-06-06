@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { ExerciseCard } from '@/components/care/ExerciseCard'
+import { TaskRow } from '@/components/care/TaskRow'
 import { CareActionCard } from '@/components/care/CareActionCard'
 import { CareActionForm } from '@/components/care/CareActionForm'
 import { ExerciseAgentDialog } from '@/components/care/ExerciseAgentDialog'
@@ -20,11 +20,14 @@ import { useApiClient } from '@/hooks/use-api-client'
 import { useActiveDog } from '@/hooks/use-active-dog'
 import type {
   CareActionRecord,
+  CareBucket,
   CarePlanPayload,
   CreateCareActionInput,
+  DailyTaskRecord,
   TodayPayload,
   UpdateCareActionInput
 } from '@/lib/api/endpoints/dogs'
+import { BUCKET_LABELS } from '@/lib/care/labels'
 import {
   formatDisplayDate,
   localDateString,
@@ -34,10 +37,15 @@ import { cn } from '@/lib/utils'
 
 type Tab = 'routine' | 'schedule'
 
+function actionBucket(action: CareActionRecord): CareBucket {
+  return action.bucket ?? 'ACTIVITY'
+}
+
 export function TasksPageClient({ dogId }: { dogId: string }) {
   const { apiClient, isReady } = useApiClient()
   useActiveDog(dogId)
   const [tab, setTab] = useState<Tab>('routine')
+  const [routineBucket, setRoutineBucket] = useState<CareBucket>('ACTIVITY')
   const [plan, setPlan] = useState<CarePlanPayload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -115,6 +123,20 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
     }
   }
 
+  const filteredActions = useMemo(
+    () => plan?.actions.filter(a => actionBucket(a) === routineBucket) ?? [],
+    [plan, routineBucket]
+  )
+
+  const scheduleTasks: DailyTaskRecord[] = useMemo(() => {
+    if (!schedulePayload) return []
+    return [
+      ...schedulePayload.buckets.activity.tasks,
+      ...schedulePayload.buckets.mobility.tasks,
+      ...schedulePayload.buckets.recovery.tasks
+    ]
+  }, [schedulePayload])
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-12">
       <div className="max-w-lg mx-auto px-4 pt-6">
@@ -158,6 +180,25 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
 
         {tab === 'routine' && (
           <>
+            <div className="flex gap-2 mb-4">
+              {(['ACTIVITY', 'MOBILITY', 'RECOVERY'] as CareBucket[]).map(b => (
+                <Button
+                  key={b}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRoutineBucket(b)}
+                  className={cn(
+                    'rounded-full text-xs',
+                    routineBucket === b &&
+                      'border-primary bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary'
+                  )}
+                >
+                  {BUCKET_LABELS[b]}
+                </Button>
+              ))}
+            </div>
+
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">Care plan</p>
@@ -182,9 +223,9 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
 
             {loading ? (
               <p className="text-muted-foreground">Loading routine…</p>
-            ) : plan && plan.actions.length > 0 ? (
+            ) : filteredActions.length > 0 ? (
               <ul className="space-y-3">
-                {plan.actions.map(action => (
+                {filteredActions.map(action => (
                   <CareActionCard
                     key={action.id}
                     action={action}
@@ -198,7 +239,9 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
               </ul>
             ) : (
               <div className="border border-dashed border-border rounded-lg p-8 text-center">
-                <p className="text-muted-foreground">No exercises in your routine yet.</p>
+                <p className="text-muted-foreground">
+                  No {BUCKET_LABELS[routineBucket].toLowerCase()} exercises in your routine yet.
+                </p>
                 <Button
                   type="button"
                   size="sm"
@@ -249,15 +292,10 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
             {scheduleLoading ? (
               <p className="text-muted-foreground">Loading schedule…</p>
             ) : schedulePayload ? (
-              schedulePayload.dailyLog.dailyCareActions.length > 0 ? (
+              scheduleTasks.length > 0 ? (
                 <ul className="space-y-3">
-                  {schedulePayload.dailyLog.dailyCareActions.map(action => (
-                    <ExerciseCard
-                      key={action.id}
-                      action={action}
-                      dogId={dogId}
-                      onUpdated={loadSchedule}
-                    />
+                  {scheduleTasks.map(task => (
+                    <TaskRow key={task.id} task={task} dogId={dogId} onUpdated={loadSchedule} />
                   ))}
                 </ul>
               ) : (
