@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CalendarDayPanel } from '@/components/care/CalendarDayPanel'
 import { DogSubNav } from '@/components/dog/DogSubNav'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { Calendar } from '@/components/ui/calendar'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useActiveDog } from '@/hooks/use-active-dog'
@@ -100,7 +101,7 @@ export function CalendarPageClient({
         <div className="relative w-full">
           {loading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 rounded-lg">
-              <p className="text-sm text-muted-foreground">Loading…</p>
+              <SpriteOverlay preset="dailyPlanLoading" mode="inline" size="small" />
             </div>
           )}
           <Calendar

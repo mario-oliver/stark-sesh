@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import { useApiClient } from '@/hooks/use-api-client'
 import { resolveDogId } from '@/lib/active-dog'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 
 export default function CalendarRedirectPage() {
   const router = useRouter()
@@ -33,9 +34,5 @@ export default function CalendarRedirectPage() {
     })()
   }, [apiClient, isReady, isLoaded, isSignedIn, router])
 
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
-      Loading…
-    </div>
-  )
+  return <SpriteOverlay preset="dailyPlanLoading" mode="blocking" />
 }

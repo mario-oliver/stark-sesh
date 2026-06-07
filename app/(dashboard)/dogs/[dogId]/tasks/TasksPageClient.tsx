@@ -7,6 +7,7 @@ import { TaskRow } from '@/components/care/TaskRow'
 import { CareActionCard } from '@/components/care/CareActionCard'
 import { CareActionForm } from '@/components/care/CareActionForm'
 import { ExerciseAgentDialog } from '@/components/care/ExerciseAgentDialog'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -222,7 +223,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
             </div>
 
             {loading ? (
-              <p className="text-muted-foreground">Loading routine…</p>
+              <SpriteOverlay preset="dailyPlanLoading" mode="inline" size="small" className="py-4" />
             ) : filteredActions.length > 0 ? (
               <ul className="space-y-3">
                 {filteredActions.map(action => (
@@ -239,6 +240,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
               </ul>
             ) : (
               <div className="border border-dashed border-border rounded-lg p-8 text-center">
+                <SpriteOverlay preset="emptyState" mode="inline" size="small" className="mb-4" />
                 <p className="text-muted-foreground">
                   No {BUCKET_LABELS[routineBucket].toLowerCase()} exercises in your routine yet.
                 </p>
@@ -290,7 +292,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
             </div>
 
             {scheduleLoading ? (
-              <p className="text-muted-foreground">Loading schedule…</p>
+              <SpriteOverlay preset="dailyPlanLoading" mode="inline" size="small" className="py-4" />
             ) : schedulePayload ? (
               scheduleTasks.length > 0 ? (
                 <ul className="space-y-3">
@@ -299,7 +301,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-muted-foreground text-sm">No tasks scheduled for this day.</p>
+                <SpriteOverlay preset="emptyState" mode="inline" size="small" />
               )
             ) : null}
           </>

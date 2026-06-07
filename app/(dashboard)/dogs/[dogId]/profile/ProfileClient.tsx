@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { DogHero } from '@/components/dog/DogHero'
 import { DogProfileFields } from '@/components/dog/DogProfileFields'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { Button } from '@/components/ui/button'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useActiveDog } from '@/hooks/use-active-dog'
@@ -109,11 +110,7 @@ export function ProfileClient({ dogId }: { dogId: string }) {
   }
 
   if (!dog) {
-    return (
-      <div className="min-h-screen bg-background text-muted-foreground flex items-center justify-center">
-        Loading…
-      </div>
-    )
+    return <SpriteOverlay preset="dailyPlanLoading" mode="blocking" message="Loading profile…" />
   }
 
   return (

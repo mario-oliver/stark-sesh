@@ -1,4 +1,7 @@
+'use client'
+
 import type { ReactNode } from 'react'
+import { StarkSprite } from '@/components/sprite/StarkSprite'
 
 type MarketingHeroProps = {
   eyebrow?: string
@@ -36,7 +39,14 @@ export function MarketingHero({
         {subheadline && (
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl text-balance mb-10">{subheadline}</p>
         )}
-        {children}
+        {children && (
+          <div className="relative">
+            <div className="absolute -top-6 -right-4 sm:-right-8 pointer-events-none">
+              <StarkSprite animation="idle" size="small" />
+            </div>
+            {children}
+          </div>
+        )}
       </div>
     </section>
   )

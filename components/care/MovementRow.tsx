@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { ExerciseMeasurement } from '@/components/care/ExerciseMeasurement'
+import { SpriteCompletionFlash } from '@/components/sprite/SpriteCompletionFlash'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useApiClient } from '@/hooks/use-api-client'
@@ -56,6 +58,8 @@ export function MovementRow({
   const [editingNote, setEditingNote] = useState(false)
   const [note, setNote] = useState(movement.notes ?? '')
   const [busy, setBusy] = useState(false)
+  const [savingNote, setSavingNote] = useState(false)
+  const [showCompletion, setShowCompletion] = useState(false)
 
   const measurementMode = getMeasurementMode(
     movement.targetReps,
@@ -66,12 +70,17 @@ export function MovementRow({
 
   const update = async (body: { status?: DailyCareActionStatus; notes?: string }) => {
     if (!isReady) return
-    setBusy(true)
+    const isNoteSave = body.notes !== undefined
+    const isCompletion = body.status === 'COMPLETED'
+    if (isNoteSave) setSavingNote(true)
+    else setBusy(true)
     try {
       await apiClient.updateDailyActionStep(dogId, movement.id, body)
       onUpdated()
+      if (isCompletion) setShowCompletion(true)
     } finally {
-      setBusy(false)
+      if (isNoteSave) setSavingNote(false)
+      else setBusy(false)
     }
   }
 
@@ -103,6 +112,12 @@ export function MovementRow({
             {STATUS_LABELS[movement.status]}
           </span>
         </div>
+
+        <SpriteCompletionFlash
+          visible={showCompletion}
+          seed={movement.id}
+          onDismiss={() => setShowCompletion(false)}
+        />
 
         <ExerciseMeasurement
           targetReps={movement.targetReps}
@@ -176,6 +191,7 @@ export function MovementRow({
           </div>
         )}
       </div>
+      {savingNote && <SpriteOverlay preset="savingNote" />}
     </li>
   )
 }

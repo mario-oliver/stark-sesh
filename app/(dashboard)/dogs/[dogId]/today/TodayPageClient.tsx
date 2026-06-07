@@ -96,8 +96,8 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
 
   if (error && !payload) {
     return (
-      <div className="min-h-screen bg-background text-foreground p-6">
-        <p className="text-destructive">{error}</p>
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">
+        <SpriteOverlay preset="errorRetry" mode="inline" />
         <Button type="button" variant="link" onClick={() => void loadToday()} className="mt-4 px-0">
           Retry
         </Button>
