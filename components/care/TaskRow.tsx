@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { ExerciseMeasurement } from '@/components/care/ExerciseMeasurement'
+import { SpriteCompletionFlash } from '@/components/sprite/SpriteCompletionFlash'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -60,6 +62,8 @@ export function TaskRow({
   const [editingNote, setEditingNote] = useState(false)
   const [note, setNote] = useState(task.notes ?? '')
   const [busy, setBusy] = useState(false)
+  const [savingNote, setSavingNote] = useState(false)
+  const [showCompletion, setShowCompletion] = useState(false)
 
   const isCompleted = task.status === 'COMPLETED'
   const isSkipped = task.status === 'SKIPPED'
@@ -73,12 +77,17 @@ export function TaskRow({
     needsReview?: boolean
   }) => {
     if (!isReady) return
-    setBusy(true)
+    const isNoteSave = body.notes !== undefined
+    const isCompletion = body.status === 'COMPLETED'
+    if (isNoteSave) setSavingNote(true)
+    else setBusy(true)
     try {
       await apiClient.updateDailyTask(dogId, task.id, body)
       onUpdated()
+      if (isCompletion) setShowCompletion(true)
     } finally {
-      setBusy(false)
+      if (isNoteSave) setSavingNote(false)
+      else setBusy(false)
     }
   }
 
@@ -142,6 +151,12 @@ export function TaskRow({
           {task.instructionsSnapshot && (
             <p className="text-xs text-muted-foreground mt-1">{task.instructionsSnapshot}</p>
           )}
+
+          <SpriteCompletionFlash
+            visible={showCompletion}
+            seed={task.id}
+            onDismiss={() => setShowCompletion(false)}
+          />
 
           <TaskMedia mediaUrl={task.mediaUrl} mediaContentType={task.mediaContentType} />
 
@@ -213,6 +228,7 @@ export function TaskRow({
           )}
         </div>
       </div>
+      {savingNote && <SpriteOverlay preset="savingNote" />}
     </li>
   )
 }

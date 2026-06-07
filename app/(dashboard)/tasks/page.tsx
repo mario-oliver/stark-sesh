@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 
 export default function TasksRedirectPage() {
   const router = useRouter()
@@ -10,9 +11,5 @@ export default function TasksRedirectPage() {
     router.replace('/exercises')
   }, [router])
 
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
-      Loading…
-    </div>
-  )
+  return <SpriteOverlay preset="dailyPlanLoading" mode="blocking" />
 }

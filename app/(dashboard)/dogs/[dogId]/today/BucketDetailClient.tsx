@@ -153,7 +153,7 @@ export function BucketDetailClient({
             ))}
           </ul>
           {bucketData.tasks.length === 0 && (
-            <p className="text-sm text-muted-foreground">No tasks yet for this bucket.</p>
+            <SpriteOverlay preset="emptyState" mode="inline" size="small" />
           )}
         </section>
 

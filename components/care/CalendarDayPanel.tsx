@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { ExerciseCard } from '@/components/care/ExerciseCard'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { useApiClient } from '@/hooks/use-api-client'
 import type { TodayPayload } from '@/lib/api/endpoints/dogs'
 import { formatDisplayDate } from '@/lib/care/display'
@@ -45,13 +46,13 @@ export function CalendarDayPanel({
   }
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground py-4">Loading tasks…</p>
+    return <SpriteOverlay preset="dailyPlanLoading" mode="inline" size="small" className="py-4" />
   }
 
   if (error && !payload) {
     return (
-      <div className="py-4">
-        <p className="text-sm text-destructive">{error}</p>
+      <div className="py-4 flex flex-col items-center">
+        <SpriteOverlay preset="errorRetry" mode="inline" size="small" />
         <Button type="button" variant="link" onClick={() => void load()} className="mt-2 h-auto px-0">
           Retry
         </Button>
@@ -70,7 +71,7 @@ export function CalendarDayPanel({
         {progress.completed} of {progress.total} done
       </p>
       {dailyLog.dailyCareActions.length === 0 ? (
-        <p className="text-sm text-muted-foreground mt-4">No tasks scheduled for this day.</p>
+        <SpriteOverlay preset="emptyState" mode="inline" size="small" className="mt-4" />
       ) : (
         <ul className="space-y-3 mt-4">
           {dailyLog.dailyCareActions.map(action => (
