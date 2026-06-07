@@ -35,6 +35,9 @@ export default function Home() {
               <Link href="/today">Open today</Link>
             </Button>
           </SignedIn>
+          <Button asChild variant="ghost" size="lg" className="rounded-full h-12 px-8">
+            <Link href="/pricing">View pricing</Link>
+          </Button>
         </div>
       </MarketingHero>
 

@@ -5,6 +5,8 @@ import type { UploadsApi } from './endpoints/uploads'
 import { uploadsMethods } from './endpoints/uploads'
 import type { UsersApi } from './endpoints/users'
 import { userMethods } from './endpoints/users'
+import type { SubscriptionApi } from './endpoints/subscription'
+import { subscriptionMethods } from './endpoints/subscription'
 
 export * from './endpoints/users'
 
@@ -80,9 +82,9 @@ class ApiClient {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-interface ApiClient extends UsersApi, DogsApi, UploadsApi {}
+interface ApiClient extends UsersApi, DogsApi, UploadsApi, SubscriptionApi {}
 
-Object.assign(ApiClient.prototype, userMethods, dogsMethods, uploadsMethods)
+Object.assign(ApiClient.prototype, userMethods, dogsMethods, uploadsMethods, subscriptionMethods)
 
 export const apiClient = new ApiClient()
 export { ApiClient }
