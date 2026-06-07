@@ -36,9 +36,8 @@ export default function TodayRedirectPage() {
 
   return (
     <SpriteOverlay
-      preset="dailyPlanLoading"
+      preset="careLogOpening"
       mode="blocking"
-      message="Opening Stark's care log…"
     />
   )
 }

@@ -1,13 +1,13 @@
 import type { SpriteAnimation, SpriteAnimationDefinition } from '@/lib/sprites/types'
 
 export const SPRITE_ANIMATION_DEFINITIONS: Record<SpriteAnimation, SpriteAnimationDefinition> = {
-  idle: { frames: 5, fps: 6, loop: true },
-  run: { frames: 3, fps: 10, loop: true },
-  walk: { frames: 4, fps: 8, loop: true },
-  sitA: { frames: 2, fps: 4, loop: false },
-  sitB: { frames: 2, fps: 4, loop: false },
-  bark: { frames: 2, fps: 6, loop: true },
-  playbow: { frames: 2, fps: 5, loop: false }
+  idle: { frames: 5, fps: 4, loop: true },
+  run: { frames: 3, fps: 6, loop: true },
+  walk: { frames: 4, fps: 5, loop: true },
+  sitA: { frames: 2, fps: 3, loop: false },
+  sitB: { frames: 2, fps: 3, loop: false },
+  bark: { frames: 2, fps: 4, loop: true },
+  playbow: { frames: 2, fps: 3, loop: false }
 }
 
 export function frameAssetName(animation: SpriteAnimation, frameIndex: number): string {

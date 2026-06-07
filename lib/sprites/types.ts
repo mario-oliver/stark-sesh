@@ -17,6 +17,7 @@ export type SpriteOverlayMode = 'blocking' | 'inline'
 export type SpriteBackground = 'dimmed' | 'transparent' | 'solid'
 
 export type SpritePresetKey =
+  | 'careLogOpening'
   | 'dailyPlanLoading'
   | 'voiceListening'
   | 'voiceProcessing'
