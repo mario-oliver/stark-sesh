@@ -1,21 +1,27 @@
 import type { SpritePresetConfig, SpritePresetKey } from '@/lib/sprites/types'
 
 export const spritePresets: Record<SpritePresetKey, SpritePresetConfig> = {
-  dailyPlanLoading: {
+  careLogOpening: {
     animation: 'run',
+    message: "Opening Stark's care log…",
+    mode: 'blocking',
+    background: 'dimmed'
+  },
+  dailyPlanLoading: {
+    animation: 'idle',
     message: "Fetching today's PT plan…",
     mode: 'blocking',
     background: 'dimmed'
   },
   voiceListening: {
-    animation: 'idle',
+    animation: 'bark',
     message: 'Listening…',
     subtext: 'Tell Stark what happened.',
     mode: 'inline',
     background: 'transparent'
   },
   voiceProcessing: {
-    animation: 'run',
+    animation: 'bark',
     message: 'Understanding your note…',
     subtext: "Matching this to today's PT plan.",
     mode: 'blocking',
@@ -29,7 +35,7 @@ export const spritePresets: Record<SpritePresetKey, SpritePresetConfig> = {
     background: 'transparent'
   },
   savingNote: {
-    animation: 'bark',
+    animation: 'walk',
     message: "Saving Stark's update…",
     mode: 'blocking',
     background: 'dimmed'
