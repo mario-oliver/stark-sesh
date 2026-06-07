@@ -6,6 +6,7 @@ import { BucketScoreCard } from '@/components/care/BucketScoreCard'
 import { ObservationRow } from '@/components/care/ObservationRow'
 import { TaskRow } from '@/components/care/TaskRow'
 import { DogSubNav } from '@/components/dog/DogSubNav'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { VoiceRecordBar } from '@/components/voice/VoiceRecordBar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -94,11 +95,7 @@ export function BucketDetailClient({
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading…</p>
-      </div>
-    )
+    return <SpriteOverlay preset="dailyPlanLoading" mode="blocking" />
   }
 
   if (!payload) return null
@@ -202,6 +199,10 @@ export function BucketDetailClient({
         onRecordingComplete={handleRecording}
         hint="Record update — say what happened today."
       />
+
+      {(isTranscribing || hasProcessingNotes) && (
+        <SpriteOverlay preset="voiceProcessing" />
+      )}
     </div>
   )
 }

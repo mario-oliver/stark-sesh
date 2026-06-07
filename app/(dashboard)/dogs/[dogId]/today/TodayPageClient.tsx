@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { BucketSummaryCard } from '@/components/care/BucketSummaryCard'
 import { DogHero } from '@/components/dog/DogHero'
 import { DogSubNav } from '@/components/dog/DogSubNav'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { VoiceRecordBar } from '@/components/voice/VoiceRecordBar'
 import { Button } from '@/components/ui/button'
 import { useApiClient } from '@/hooks/use-api-client'
@@ -90,11 +91,7 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <p className="text-muted-foreground">Loading today&apos;s care…</p>
-      </div>
-    )
+    return <SpriteOverlay preset="dailyPlanLoading" mode="blocking" />
   }
 
   if (error && !payload) {
@@ -180,6 +177,10 @@ export function TodayPageClient({ dogId }: { dogId: string }) {
         onRecordingComplete={handleRecording}
         hint="Record Update — say what Stark did today."
       />
+
+      {(isTranscribing || hasProcessingNotes) && (
+        <SpriteOverlay preset="voiceProcessing" />
+      )}
     </div>
   )
 }
