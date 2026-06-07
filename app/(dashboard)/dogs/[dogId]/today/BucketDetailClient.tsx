@@ -14,6 +14,7 @@ import { useApiClient } from '@/hooks/use-api-client'
 import { useActiveDog } from '@/hooks/use-active-dog'
 import type { BucketPayload, CareBucket, TodayPayload } from '@/lib/api/endpoints/dogs'
 import { formatDisplayDate, localDateString } from '@/lib/care/display'
+import { hasProcessingVoiceNotes } from '@/lib/care/voiceNotes'
 
 const BUCKET_TITLES: Record<CareBucket, string> = {
   ACTIVITY: 'Activity',
@@ -55,9 +56,7 @@ export function BucketDetailClient({
     void loadToday()
   }, [loadToday])
 
-  const hasProcessingNotes =
-    payload?.dailyLog.voiceNotes.some(n => n.processingStatus === 'PENDING' || n.processingStatus === 'TRANSCRIBED') ??
-    false
+  const hasProcessingNotes = hasProcessingVoiceNotes(payload?.dailyLog.voiceNotes)
 
   useEffect(() => {
     if (!hasProcessingNotes || !isReady) return
