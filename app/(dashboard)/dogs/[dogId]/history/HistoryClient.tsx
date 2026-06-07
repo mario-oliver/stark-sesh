@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { DogSubNav } from '@/components/dog/DogSubNav'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useActiveDog } from '@/hooks/use-active-dog'
 
@@ -18,10 +19,15 @@ export function HistoryClient({ dogId }: { dogId: string }) {
       totalActions: number
     }>
   >([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!isReady) return
-    void apiClient.getHistory(dogId).then(res => setLogs(res.data.logs))
+    setLoading(true)
+    void apiClient
+      .getHistory(dogId)
+      .then(res => setLogs(res.data.logs))
+      .finally(() => setLoading(false))
   }, [apiClient, isReady, dogId])
 
   function dateParam(dateStr: string) {
@@ -47,6 +53,9 @@ export function HistoryClient({ dogId }: { dogId: string }) {
 
         <DogSubNav dogId={dogId} />
 
+        {loading ? (
+          <SpriteOverlay preset="dailyPlanLoading" mode="inline" size="small" className="py-12" />
+        ) : (
         <ul className="space-y-3">
           {logs.map(log => (
             <li key={log.id}>
@@ -62,8 +71,9 @@ export function HistoryClient({ dogId }: { dogId: string }) {
               </Link>
             </li>
           ))}
-          {logs.length === 0 && <p className="text-muted-foreground">No past logs yet.</p>}
+          {logs.length === 0 && <SpriteOverlay preset="emptyState" mode="inline" size="small" />}
         </ul>
+        )}
       </div>
     </div>
   )

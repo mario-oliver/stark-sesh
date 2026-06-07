@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { ExerciseMeasurement } from '@/components/care/ExerciseMeasurement'
+import { SpriteCompletionFlash } from '@/components/sprite/SpriteCompletionFlash'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useApiClient } from '@/hooks/use-api-client'
@@ -30,6 +32,8 @@ export function ActionRow({
   const [editingNote, setEditingNote] = useState(false)
   const [note, setNote] = useState(action.notes ?? '')
   const [busy, setBusy] = useState(false)
+  const [savingNote, setSavingNote] = useState(false)
+  const [showCompletion, setShowCompletion] = useState(false)
 
   const measurementMode = getMeasurementMode(action.targetReps, action.targetDurationSeconds)
   const isCompleted = action.status === 'COMPLETED'
@@ -41,12 +45,17 @@ export function ActionRow({
     tolerance?: Tolerance | null
   }) => {
     if (!isReady) return
-    setBusy(true)
+    const isNoteSave = body.notes !== undefined
+    const isCompletion = body.status === 'COMPLETED'
+    if (isNoteSave) setSavingNote(true)
+    else setBusy(true)
     try {
       await apiClient.updateDailyAction(dogId, action.id, body)
       onUpdated()
+      if (isCompletion) setShowCompletion(true)
     } finally {
-      setBusy(false)
+      if (isNoteSave) setSavingNote(false)
+      else setBusy(false)
     }
   }
 
@@ -58,6 +67,12 @@ export function ActionRow({
           {action.issueObserved && <span className="text-primary">Issue noted.</span>}
         </p>
       )}
+
+      <SpriteCompletionFlash
+        visible={showCompletion}
+        seed={action.id}
+        onDismiss={() => setShowCompletion(false)}
+      />
 
       <ExerciseMeasurement
         targetReps={action.targetReps}
@@ -134,7 +149,12 @@ export function ActionRow({
   )
 
   if (embedded) {
-    return <div className="space-y-3">{content}</div>
+    return (
+      <div className="space-y-3">
+        {content}
+        {savingNote && <SpriteOverlay preset="savingNote" />}
+      </div>
+    )
   }
 
   return (
@@ -150,6 +170,7 @@ export function ActionRow({
         </div>
       )}
       {content}
+      {savingNote && <SpriteOverlay preset="savingNote" />}
     </li>
   )
 }

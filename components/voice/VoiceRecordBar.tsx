@@ -2,6 +2,7 @@
 
 import { Mic, Square } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { blobToWav } from '@/lib/audio-to-wav'
 import { Button } from '@/components/ui/button'
 
@@ -77,13 +78,14 @@ export function VoiceRecordBar({
           <Square fill="currentColor" />
         </Button>
       )}
-      <p className="text-sm text-muted-foreground text-center max-w-sm">
-        {isRecording
-          ? 'Recording… Tap to stop and send.'
-          : isProcessing
-            ? 'Processing your update…'
-            : hint}
-      </p>
+      {isRecording && (
+        <SpriteOverlay preset="voiceListening" mode="inline" size="small" className="py-2" />
+      )}
+      {!isRecording && (
+        <p className="text-sm text-muted-foreground text-center max-w-sm">
+          {isProcessing ? 'Processing your update…' : hint}
+        </p>
+      )}
     </div>
   )
 }

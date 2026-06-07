@@ -6,6 +6,7 @@ import { BucketScoreCard } from '@/components/care/BucketScoreCard'
 import { ObservationRow } from '@/components/care/ObservationRow'
 import { TaskRow } from '@/components/care/TaskRow'
 import { DogSubNav } from '@/components/dog/DogSubNav'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { VoiceRecordBar } from '@/components/voice/VoiceRecordBar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +14,7 @@ import { useApiClient } from '@/hooks/use-api-client'
 import { useActiveDog } from '@/hooks/use-active-dog'
 import type { BucketPayload, CareBucket, TodayPayload } from '@/lib/api/endpoints/dogs'
 import { formatDisplayDate, localDateString } from '@/lib/care/display'
+import { hasProcessingVoiceNotes } from '@/lib/care/voiceNotes'
 
 const BUCKET_TITLES: Record<CareBucket, string> = {
   ACTIVITY: 'Activity',
@@ -54,9 +56,7 @@ export function BucketDetailClient({
     void loadToday()
   }, [loadToday])
 
-  const hasProcessingNotes =
-    payload?.dailyLog.voiceNotes.some(n => n.processingStatus === 'PENDING' || n.processingStatus === 'TRANSCRIBED') ??
-    false
+  const hasProcessingNotes = hasProcessingVoiceNotes(payload?.dailyLog.voiceNotes)
 
   useEffect(() => {
     if (!hasProcessingNotes || !isReady) return
@@ -94,11 +94,7 @@ export function BucketDetailClient({
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading…</p>
-      </div>
-    )
+    return <SpriteOverlay preset="dailyPlanLoading" mode="blocking" />
   }
 
   if (!payload) return null
@@ -156,7 +152,7 @@ export function BucketDetailClient({
             ))}
           </ul>
           {bucketData.tasks.length === 0 && (
-            <p className="text-sm text-muted-foreground">No tasks yet for this bucket.</p>
+            <SpriteOverlay preset="emptyState" mode="inline" size="small" />
           )}
         </section>
 
@@ -202,6 +198,10 @@ export function BucketDetailClient({
         onRecordingComplete={handleRecording}
         hint="Record update — say what happened today."
       />
+
+      {(isTranscribing || hasProcessingNotes) && (
+        <SpriteOverlay preset="voiceProcessing" />
+      )}
     </div>
   )
 }

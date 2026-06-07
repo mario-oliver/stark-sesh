@@ -6,6 +6,7 @@ import { useAuth } from '@clerk/nextjs'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { DogProfileFields } from '@/components/dog/DogProfileFields'
+import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { useApiClient } from '@/hooks/use-api-client'
 import { resolveDogId, setActiveDogId } from '@/lib/active-dog'
 import { DEFAULT_ROUTINE_ITEMS, DEFAULT_ROUTINE_NAME } from '@/lib/care/default-routine'
@@ -96,11 +97,7 @@ export default function OnboardingPage() {
   }
 
   if (!isLoaded || checkingExisting) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
-        Loading…
-      </div>
-    )
+    return <SpriteOverlay preset="dailyPlanLoading" mode="blocking" />
   }
 
   return (
