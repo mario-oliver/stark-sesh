@@ -13,6 +13,7 @@ import { useActiveDog } from '@/hooks/use-active-dog'
 import type { TodayPayload, VoiceNoteRecord } from '@/lib/api/endpoints/dogs'
 import { caregiverName, formatDisplayDate, formatTimestamp, localDateString } from '@/lib/care/display'
 import { hasProcessingVoiceNotes } from '@/lib/care/voiceNotes'
+import { SpriteSourceProvider } from '@/lib/sprites/SpriteSourceContext'
 
 function VoiceNoteCard({ note }: { note: VoiceNoteRecord }) {
   const [expanded, setExpanded] = useState(false)
@@ -43,6 +44,14 @@ function VoiceNoteCard({ note }: { note: VoiceNoteRecord }) {
 }
 
 export function TodayPageClient({ dogId }: { dogId: string }) {
+  return (
+    <SpriteSourceProvider dogId={dogId}>
+      <TodayPageClientInner dogId={dogId} />
+    </SpriteSourceProvider>
+  )
+}
+
+function TodayPageClientInner({ dogId }: { dogId: string }) {
   const { apiClient, isReady } = useApiClient()
   useActiveDog(dogId)
   const [payload, setPayload] = useState<TodayPayload | null>(null)

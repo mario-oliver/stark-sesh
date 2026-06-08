@@ -29,6 +29,7 @@ export type SpritePresetKey =
   | 'dayComplete'
   | 'errorRetry'
   | 'caregiverSync'
+  | 'spriteGenerating'
 
 export type SpriteAnimationDefinition = {
   frames: number
