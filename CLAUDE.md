@@ -29,13 +29,11 @@ Small, incidental changes may use Cursor without the full loop.
 Package manager: **npm**
 
 ```bash
-npm test            # OPEN — no test framework installed yet (add vitest before first inner-loop run)
+npm test            # vitest run (HARNESS_READY — smoke-verified 2026-06-09)
 npx tsc --noEmit    # typecheck (no "typecheck" npm script — use this directly)
 npm run lint        # eslint
 npm run build       # next build
 ```
-
-> **Before first inner-loop run on this repo:** install vitest and add `"test": "vitest run"` to package.json.
 
 See full gate reference: `/Users/mariooliver/Documents/Obsidian Vault/Jarvis/Skills_A/workflow/inner-loop/references/test-gates.md`
 
