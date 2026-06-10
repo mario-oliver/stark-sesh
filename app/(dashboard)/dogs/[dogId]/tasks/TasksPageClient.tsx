@@ -7,6 +7,7 @@ import { TaskRow } from '@/components/care/TaskRow'
 import { CareActionCard } from '@/components/care/CareActionCard'
 import { CareActionForm } from '@/components/care/CareActionForm'
 import { ExerciseAgentDialog } from '@/components/care/ExerciseAgentDialog'
+import { ProgramAuditDialog } from '@/components/care/ProgramAuditDialog'
 import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
 import { Button } from '@/components/ui/button'
 import {
@@ -52,6 +53,7 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
   const [error, setError] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [agentOpen, setAgentOpen] = useState(false)
+  const [auditOpen, setAuditOpen] = useState(false)
   const [editingAction, setEditingAction] = useState<CareActionRecord | null>(null)
   const [deactivatingAction, setDeactivatingAction] = useState<CareActionRecord | null>(null)
   const [busy, setBusy] = useState(false)
@@ -206,6 +208,9 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
                 <p className="text-sm text-foreground mt-0.5">{plan?.name ?? '…'}</p>
               </div>
               <div className="flex gap-2">
+                <Button type="button" size="sm" variant="ghost" onClick={() => setAuditOpen(true)}>
+                  Audit
+                </Button>
                 <Button type="button" size="sm" variant="outline" onClick={() => setAgentOpen(true)}>
                   Create with AI
                 </Button>
@@ -311,6 +316,13 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
       <ExerciseAgentDialog
         open={agentOpen}
         onOpenChange={setAgentOpen}
+        dogId={dogId}
+        onCommitted={loadPlan}
+      />
+
+      <ProgramAuditDialog
+        open={auditOpen}
+        onOpenChange={setAuditOpen}
         dogId={dogId}
         onCommitted={loadPlan}
       />

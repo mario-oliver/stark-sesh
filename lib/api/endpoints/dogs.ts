@@ -179,6 +179,65 @@ export interface ExerciseAgentSessionPayload {
   updatedAt: string
 }
 
+export type ProgramAuditSessionStatus =
+  | 'ACTIVE'
+  | 'AWAITING_INPUT'
+  | 'REPORT_READY'
+  | 'PLAN_READY'
+  | 'COMMITTED'
+  | 'FAILED'
+
+export interface AuditObservation {
+  actionId: string
+  actionName: string
+  finding: string
+  severity: 'LOW' | 'MEDIUM' | 'HIGH'
+  recommendation: string
+}
+
+export interface AuditReport {
+  summary: string
+  strengths: string[]
+  gaps: string[]
+  observations: AuditObservation[]
+  overallRating: 'GOOD' | 'FAIR' | 'NEEDS_WORK'
+}
+
+export interface ProposedChangeUpdates {
+  name?: string
+  description?: string | null
+  category?: CareActionCategory
+  frequency?: CareActionFrequency
+  timeOfDay?: CareActionTimeOfDay | null
+  instructions?: string | null
+}
+
+export interface ProposedChange {
+  id: string
+  type: 'UPDATE' | 'DEACTIVATE' | 'CREATE'
+  actionId?: string
+  actionName?: string
+  updates?: ProposedChangeUpdates
+  newAction?: ProposedExercise
+  reason: string
+}
+
+export interface ProposedProgramChanges {
+  summary: string
+  changes: ProposedChange[]
+}
+
+export interface ProgramAuditSessionPayload {
+  id: string
+  dogId: string
+  status: ProgramAuditSessionStatus
+  messages: ExerciseAgentMessage[]
+  report: AuditReport | null
+  plan: ProposedProgramChanges | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface UpdateCareActionInput extends Partial<CreateCareActionInput> {}
 
 export interface CalendarDaySummary {
@@ -515,6 +574,31 @@ export interface DogsApi {
     dogId: string,
     sessionId: string
   ): Promise<{ success: boolean; data: { cancelled: boolean } }>
+  createProgramAuditSession(
+    dogId: string
+  ): Promise<{ success: boolean; data: ProgramAuditSessionPayload; message?: string }>
+  getProgramAuditSession(
+    dogId: string,
+    sessionId: string
+  ): Promise<{ success: boolean; data: ProgramAuditSessionPayload }>
+  sendProgramAuditMessage(
+    dogId: string,
+    sessionId: string,
+    message: string
+  ): Promise<{ success: boolean; data: ProgramAuditSessionPayload }>
+  confirmProgramAuditSession(
+    dogId: string,
+    sessionId: string,
+    selectedChangeIds?: string[]
+  ): Promise<{
+    success: boolean
+    data: { applied: CareActionRecord[]; changesApplied: number; status: string }
+    message?: string
+  }>
+  cancelProgramAuditSession(
+    dogId: string,
+    sessionId: string
+  ): Promise<{ success: boolean; data: { cancelled: boolean } }>
 }
 
 export const dogsMethods = {
@@ -786,6 +870,49 @@ export const dogsMethods = {
   async cancelExerciseAgentSession(this: ApiClient, dogId: string, sessionId: string) {
     return this.request<{ success: boolean; data: { cancelled: boolean } }>(
       `/v1/dogs/${dogId}/exercise-agent/sessions/${sessionId}`,
+      { method: 'DELETE' }
+    )
+  },
+
+  async createProgramAuditSession(this: ApiClient, dogId: string) {
+    return this.request<{ success: boolean; data: ProgramAuditSessionPayload; message?: string }>(
+      `/v1/dogs/${dogId}/program-audit/sessions`,
+      { method: 'POST', data: {} }
+    )
+  },
+
+  async getProgramAuditSession(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{ success: boolean; data: ProgramAuditSessionPayload }>(
+      `/v1/dogs/${dogId}/program-audit/sessions/${sessionId}`
+    )
+  },
+
+  async sendProgramAuditMessage(this: ApiClient, dogId: string, sessionId: string, message: string) {
+    return this.request<{ success: boolean; data: ProgramAuditSessionPayload }>(
+      `/v1/dogs/${dogId}/program-audit/sessions/${sessionId}/messages`,
+      { method: 'POST', data: { message } }
+    )
+  },
+
+  async confirmProgramAuditSession(
+    this: ApiClient,
+    dogId: string,
+    sessionId: string,
+    selectedChangeIds?: string[]
+  ) {
+    return this.request<{
+      success: boolean
+      data: { applied: CareActionRecord[]; changesApplied: number; status: string }
+      message?: string
+    }>(`/v1/dogs/${dogId}/program-audit/sessions/${sessionId}/confirm`, {
+      method: 'POST',
+      data: { selectedChangeIds }
+    })
+  },
+
+  async cancelProgramAuditSession(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{ success: boolean; data: { cancelled: boolean } }>(
+      `/v1/dogs/${dogId}/program-audit/sessions/${sessionId}`,
       { method: 'DELETE' }
     )
   }
