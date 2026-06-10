@@ -15,6 +15,7 @@ import { useActiveDog } from '@/hooks/use-active-dog'
 import type { BucketPayload, CareBucket, TodayPayload } from '@/lib/api/endpoints/dogs'
 import { formatDisplayDate, localDateString } from '@/lib/care/display'
 import { hasProcessingVoiceNotes } from '@/lib/care/voiceNotes'
+import { SpriteSourceProvider } from '@/lib/sprites/SpriteSourceContext'
 
 const BUCKET_TITLES: Record<CareBucket, string> = {
   ACTIVITY: 'Activity',
@@ -23,6 +24,20 @@ const BUCKET_TITLES: Record<CareBucket, string> = {
 }
 
 export function BucketDetailClient({
+  dogId,
+  bucket
+}: {
+  dogId: string
+  bucket: CareBucket
+}) {
+  return (
+    <SpriteSourceProvider dogId={dogId}>
+      <BucketDetailClientInner dogId={dogId} bucket={bucket} />
+    </SpriteSourceProvider>
+  )
+}
+
+function BucketDetailClientInner({
   dogId,
   bucket
 }: {

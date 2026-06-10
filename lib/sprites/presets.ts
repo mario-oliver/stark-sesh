@@ -81,6 +81,13 @@ export const spritePresets: Record<SpritePresetKey, SpritePresetConfig> = {
     subtext: "Stark's timeline is up to date.",
     mode: 'inline',
     background: 'transparent'
+  },
+  spriteGenerating: {
+    animation: 'walk',
+    message: 'Creating your companion…',
+    subtext: 'Generating custom sprites from your dog photo.',
+    mode: 'blocking',
+    background: 'dimmed'
   }
 }
 

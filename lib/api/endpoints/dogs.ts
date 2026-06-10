@@ -179,6 +179,56 @@ export interface CareAgentCommitResult {
   changesApplied?: number
 }
 
+// ── Sprite Generation types ──────────────────────────────────────────────────
+
+export type SpriteGenerationStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'AWAITING_INPUT'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELED'
+
+export interface SpriteGenerationSessionRecord {
+  id: string
+  dogId: string
+  userId: string
+  status: SpriteGenerationStatus
+  currentStep: string | null
+  progress: number
+  breedInput: string
+  normalizedBreed: string | null
+  spriteSetId: string | null
+  error: string | null
+  steps: Record<string, unknown>
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SpriteManifestAnimationEntry {
+  frames: number
+  fps: number
+  loop: boolean
+  keys: string[]
+}
+
+export interface SpriteSetRecord {
+  id: string
+  dogId: string
+  isActive: boolean
+  styleVersion: string
+  storagePrefix: string
+  manifest: {
+    styleVersion: string
+    breed: string
+    generatedAt: string
+    animations: Partial<Record<string, SpriteManifestAnimationEntry>>
+  }
+  /** Base URL for frame requests, e.g. https://api/.../sprites */
+  frameBaseUrl: string
+  createdAt: string
+}
+
 export interface CalendarDaySummary {
   date: string
   completedCount: number
@@ -461,6 +511,19 @@ export interface DogsApi {
     dogId: string,
     sessionId: string
   ): Promise<{ success: boolean; data: { cancelled: boolean } }>
+  createSpriteSession(
+    dogId: string,
+    body: { photoKey: string; breed: string }
+  ): Promise<{ success: boolean; data: SpriteGenerationSessionRecord; message?: string }>
+  getSpriteSession(
+    dogId: string,
+    sessionId: string
+  ): Promise<{ success: boolean; data: SpriteGenerationSessionRecord }>
+  cancelSpriteSession(
+    dogId: string,
+    sessionId: string
+  ): Promise<{ success: boolean; data: { canceled: boolean } }>
+  getDogSpriteSet(dogId: string): Promise<{ success: boolean; data: SpriteSetRecord | null }>
 }
 
 export const dogsMethods = {
@@ -684,6 +747,38 @@ export const dogsMethods = {
     return this.request<{ success: boolean; data: { cancelled: boolean } }>(
       `/v1/dogs/${dogId}/care-agent/sessions/${sessionId}`,
       { method: 'DELETE' }
+    )
+  },
+
+  // ── Sprite Generation ─────────────────────────────────────────────────────
+
+  async createSpriteSession(
+    this: ApiClient,
+    dogId: string,
+    body: { photoKey: string; breed: string }
+  ) {
+    return this.request<{ success: boolean; data: SpriteGenerationSessionRecord; message?: string }>(
+      `/v1/dogs/${dogId}/sprite-sessions`,
+      { method: 'POST', data: body }
+    )
+  },
+
+  async getSpriteSession(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{ success: boolean; data: SpriteGenerationSessionRecord }>(
+      `/v1/dogs/${dogId}/sprite-sessions/${sessionId}`
+    )
+  },
+
+  async cancelSpriteSession(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{ success: boolean; data: { canceled: boolean } }>(
+      `/v1/dogs/${dogId}/sprite-sessions/${sessionId}`,
+      { method: 'DELETE' }
+    )
+  },
+
+  async getDogSpriteSet(this: ApiClient, dogId: string) {
+    return this.request<{ success: boolean; data: SpriteSetRecord | null }>(
+      `/v1/dogs/${dogId}/sprite-set`
     )
   }
 }
