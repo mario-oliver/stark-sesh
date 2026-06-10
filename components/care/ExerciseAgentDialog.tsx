@@ -13,9 +13,9 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { useApiClient } from '@/hooks/use-api-client'
-import type { ExerciseAgentSessionPayload, ProposedExercise } from '@/lib/api/endpoints/dogs'
+import type { CareAgentSessionPayload, ProposedCareAction } from '@/lib/api/endpoints/dogs'
 import {
-  CATEGORY_LABELS,
+  BUCKET_LABELS,
   FREQUENCY_LABELS,
   TIME_OF_DAY_LABELS
 } from '@/lib/care/labels'
@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils'
 const VET_DISCLAIMER =
   'This is not veterinary advice. Consult your vet before starting new rehab exercises.'
 
-function DraftPreview({ draft }: { draft: ProposedExercise }) {
+function DraftPreview({ draft }: { draft: ProposedCareAction }) {
   return (
     <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3 text-sm">
       <div>
@@ -33,7 +33,7 @@ function DraftPreview({ draft }: { draft: ProposedExercise }) {
           <p className="text-muted-foreground mt-1">{draft.description}</p>
         )}
         <p className="text-xs text-muted-foreground mt-2">
-          {CATEGORY_LABELS[draft.category]} · {FREQUENCY_LABELS[draft.frequency]}
+          {BUCKET_LABELS[draft.bucket]} · {FREQUENCY_LABELS[draft.frequency]}
           {draft.timeOfDay ? ` · ${TIME_OF_DAY_LABELS[draft.timeOfDay]}` : ''}
         </p>
       </div>
@@ -43,21 +43,6 @@ function DraftPreview({ draft }: { draft: ProposedExercise }) {
           {draft.instructions}
         </p>
       )}
-      <div>
-        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
-          Movements ({draft.movements.length})
-        </p>
-        <ol className="list-decimal list-inside space-y-2">
-          {draft.movements.map((m, i) => (
-            <li key={i} className="text-foreground">
-              <span className="font-medium">{m.name}</span>
-              {m.instructions && (
-                <p className="text-muted-foreground text-xs mt-0.5 ml-5">{m.instructions}</p>
-              )}
-            </li>
-          ))}
-        </ol>
-      </div>
       <p className="text-xs text-muted-foreground">
         <span className="font-medium text-foreground">Why: </span>
         {draft.rationale}
@@ -83,7 +68,7 @@ export function ExerciseAgentDialog({
   onCommitted: () => void | Promise<void>
 }) {
   const { apiClient, isReady } = useApiClient()
-  const [session, setSession] = useState<ExerciseAgentSessionPayload | null>(null)
+  const [session, setSession] = useState<CareAgentSessionPayload<ProposedCareAction> | null>(null)
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -116,10 +101,14 @@ export function ExerciseAgentDialog({
 
     try {
       if (!session) {
-        const res = await apiClient.createExerciseAgentSession(dogId, text)
+        const res = await apiClient.createCareAgentSession<ProposedCareAction>(
+          dogId,
+          'PLAN_BUILD',
+          text
+        )
         setSession(res.data)
       } else {
-        const res = await apiClient.sendExerciseAgentMessage(dogId, session.id, text)
+        const res = await apiClient.sendCareAgentMessage<ProposedCareAction>(dogId, session.id, text)
         setSession(res.data)
       }
     } catch (e) {
@@ -134,7 +123,7 @@ export function ExerciseAgentDialog({
     setBusy(true)
     setError(null)
     try {
-      await apiClient.confirmExerciseAgentSession(dogId, session.id)
+      await apiClient.confirmCareAgentSession(dogId, session.id)
       onOpenChange(false)
       await onCommitted()
     } catch (e) {
@@ -147,7 +136,7 @@ export function ExerciseAgentDialog({
   const handleCancel = async () => {
     if (session && isReady) {
       try {
-        await apiClient.cancelExerciseAgentSession(dogId, session.id)
+        await apiClient.cancelCareAgentSession(dogId, session.id)
       } catch {
         /* ignore */
       }

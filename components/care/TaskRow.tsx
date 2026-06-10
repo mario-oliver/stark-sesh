@@ -9,34 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { useApiClient } from '@/hooks/use-api-client'
-import type { DailyCareActionStatus, DailyTaskRecord } from '@/lib/api/endpoints/dogs'
+import type { DailyCareActionRecord, DailyCareActionStatus } from '@/lib/api/endpoints/dogs'
 import { getMeasurementMode } from '@/lib/care/measurement'
 import { caregiverName, formatTimestamp } from '@/lib/care/display'
 import { cn } from '@/lib/utils'
 
-function TaskMedia({ mediaUrl, mediaContentType }: { mediaUrl: string | null; mediaContentType: string | null }) {
-  if (!mediaUrl) return null
-  const isVideo = mediaContentType?.startsWith('video/')
-  if (isVideo) {
-    return (
-      <video
-        src={mediaUrl}
-        controls
-        className="mt-3 w-full max-h-48 rounded-lg border border-border bg-muted"
-      />
-    )
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={mediaUrl}
-      alt=""
-      className="mt-3 w-full max-h-48 object-cover rounded-lg border border-border"
-    />
-  )
-}
-
-function sourceLabel(source: DailyTaskRecord['source']) {
+function sourceLabel(source: DailyCareActionRecord['source']) {
   switch (source) {
     case 'LLM_EXTRACTED':
       return 'From voice'
@@ -54,7 +32,7 @@ export function TaskRow({
   dogId,
   onUpdated
 }: {
-  task: DailyTaskRecord
+  task: DailyCareActionRecord
   dogId: string
   onUpdated: () => void
 }) {
@@ -82,7 +60,7 @@ export function TaskRow({
     if (isNoteSave) setSavingNote(true)
     else setBusy(true)
     try {
-      await apiClient.updateDailyTask(dogId, task.id, body)
+      await apiClient.updateDailyAction(dogId, task.id, body)
       onUpdated()
       if (isCompletion) setShowCompletion(true)
     } finally {
@@ -157,8 +135,6 @@ export function TaskRow({
             seed={task.id}
             onDismiss={() => setShowCompletion(false)}
           />
-
-          <TaskMedia mediaUrl={task.mediaUrl} mediaContentType={task.mediaContentType} />
 
           <ExerciseMeasurement
             targetReps={task.targetReps}

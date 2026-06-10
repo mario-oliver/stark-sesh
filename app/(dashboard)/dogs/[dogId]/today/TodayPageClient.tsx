@@ -22,7 +22,6 @@ function VoiceNoteCard({ note }: { note: VoiceNoteRecord }) {
         <p className="text-sm text-foreground line-clamp-2">{note.transcript || '(no transcript)'}</p>
         <span className="text-xs text-muted-foreground shrink-0">{note.processingStatus}</span>
       </div>
-      {note.caregiverNote && <p className="text-xs text-primary mt-1">{note.caregiverNote}</p>}
       <p className="text-xs text-muted-foreground mt-1">
         {caregiverName(note.user)} · {formatTimestamp(note.createdAt)}
       </p>

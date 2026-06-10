@@ -27,16 +27,13 @@ import type {
 } from '@/lib/api/endpoints/dogs'
 import {
   BUCKET_OPTIONS,
-  CATEGORY_OPTIONS,
   FREQUENCY_OPTIONS,
   TIME_OF_DAY_OPTIONS
 } from '@/lib/care/labels'
-import { MovementEditor } from '@/components/care/MovementEditor'
 
 type FormState = {
   name: string
   description: string
-  category: CreateCareActionInput['category']
   bucket: CareBucket
   frequency: CreateCareActionInput['frequency']
   timeOfDay: CreateCareActionInput['timeOfDay']
@@ -49,7 +46,6 @@ function emptyForm(): FormState {
   return {
     name: '',
     description: '',
-    category: 'GENERAL_CARE',
     bucket: 'ACTIVITY',
     frequency: 'DAILY',
     timeOfDay: 'ANYTIME',
@@ -63,8 +59,7 @@ function formFromAction(action: CareActionRecord): FormState {
   return {
     name: action.name,
     description: action.description ?? '',
-    category: action.category,
-    bucket: action.bucket ?? 'ACTIVITY',
+    bucket: action.bucket,
     frequency: action.frequency,
     timeOfDay: action.timeOfDay ?? 'ANYTIME',
     targetReps: action.targetReps?.toString() ?? '',
@@ -77,7 +72,6 @@ function toPayload(form: FormState): CreateCareActionInput {
   return {
     name: form.name.trim(),
     description: form.description.trim() || null,
-    category: form.category,
     bucket: form.bucket,
     frequency: form.frequency,
     timeOfDay: form.timeOfDay || null,
@@ -94,17 +88,13 @@ export function CareActionForm({
   onOpenChange,
   action,
   onSubmit,
-  busy,
-  dogId,
-  onMovementsChanged
+  busy
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   action?: CareActionRecord | null
   onSubmit: (input: CreateCareActionInput | UpdateCareActionInput) => Promise<void>
   busy?: boolean
-  dogId?: string
-  onMovementsChanged?: () => void
 }) {
   const [form, setForm] = useState<FormState>(action ? formFromAction(action) : emptyForm())
   const [error, setError] = useState<string | null>(null)
@@ -180,27 +170,6 @@ export function CareActionForm({
             </div>
 
             <div className="space-y-2">
-              <Label>Category</Label>
-              <Select
-                value={form.category}
-                onValueChange={v =>
-                  setForm(f => ({ ...f, category: v as FormState['category'] }))
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORY_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
               <Label>Frequency</Label>
               <Select
                 value={form.frequency}
@@ -243,38 +212,32 @@ export function CareActionForm({
             </Select>
           </div>
 
-          {(action?.steps?.length ?? 0) > 0 ? (
-            <p className="text-xs text-muted-foreground">
-              Set target reps or hold duration on each movement below.
-            </p>
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="targetReps">Target reps</Label>
-                <Input
-                  id="targetReps"
-                  type="number"
-                  min={0}
-                  value={form.targetReps}
-                  onChange={e => setForm(f => ({ ...f, targetReps: e.target.value }))}
-                  placeholder="Optional"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="targetDuration">Duration (sec)</Label>
-                <Input
-                  id="targetDuration"
-                  type="number"
-                  min={0}
-                  value={form.targetDurationSeconds}
-                  onChange={e =>
-                    setForm(f => ({ ...f, targetDurationSeconds: e.target.value }))
-                  }
-                  placeholder="Optional"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="targetReps">Target reps</Label>
+              <Input
+                id="targetReps"
+                type="number"
+                min={0}
+                value={form.targetReps}
+                onChange={e => setForm(f => ({ ...f, targetReps: e.target.value }))}
+                placeholder="Optional"
+              />
             </div>
-          )}
+            <div className="space-y-2">
+              <Label htmlFor="targetDuration">Duration (sec)</Label>
+              <Input
+                id="targetDuration"
+                type="number"
+                min={0}
+                value={form.targetDurationSeconds}
+                onChange={e =>
+                  setForm(f => ({ ...f, targetDurationSeconds: e.target.value }))
+                }
+                placeholder="Optional"
+              />
+            </div>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="instructions">Instructions</Label>
@@ -288,10 +251,6 @@ export function CareActionForm({
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
-
-          {action && dogId && onMovementsChanged && (
-            <MovementEditor dogId={dogId} action={action} onChanged={onMovementsChanged} />
-          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -80,7 +80,7 @@ export function BucketDetailClient({
   const handleAddTask = async () => {
     if (!isReady || !newTaskName.trim() || !payload) return
     try {
-      await apiClient.createDailyTask(dogId, {
+      await apiClient.createDailyCareAction(dogId, {
         dailyCareLogId: payload.dailyLog.id,
         bucket,
         name: newTaskName.trim()
@@ -147,11 +147,11 @@ export function BucketDetailClient({
         <section className="mb-8">
           <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Tasks</h2>
           <ul className="space-y-3">
-            {bucketData.tasks.map(task => (
+            {bucketData.actions.map(task => (
               <TaskRow key={task.id} task={task} dogId={dogId} onUpdated={loadToday} />
             ))}
           </ul>
-          {bucketData.tasks.length === 0 && (
+          {bucketData.actions.length === 0 && (
             <SpriteOverlay preset="emptyState" mode="inline" size="small" />
           )}
         </section>
