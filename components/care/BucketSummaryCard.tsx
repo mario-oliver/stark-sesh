@@ -44,7 +44,7 @@ function bucketSummary(bucket: CareBucket, data: BucketPayload) {
   if (data.progress && data.progress.total > 0) {
     return `${data.progress.completed} of ${data.progress.total} complete`
   }
-  const names = data.tasks.slice(0, 3).map(t => t.nameSnapshot)
+  const names = data.actions.slice(0, 3).map(t => t.nameSnapshot)
   return names.length > 0 ? names.join(', ') : 'Nothing logged yet'
 }
 

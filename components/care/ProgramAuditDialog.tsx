@@ -17,13 +17,14 @@ import { useApiClient } from '@/hooks/use-api-client'
 import type {
   AuditObservation,
   AuditReport,
+  CareAgentSessionPayload,
+  PlanAuditDraft,
   ProposedChange,
   ProposedChangeUpdates,
-  ProposedProgramChanges,
-  ProgramAuditSessionPayload
+  ProposedProgramChanges
 } from '@/lib/api/endpoints/dogs'
 import {
-  CATEGORY_LABELS,
+  BUCKET_LABELS,
   FREQUENCY_LABELS,
   TIME_OF_DAY_LABELS
 } from '@/lib/care/labels'
@@ -94,7 +95,7 @@ function changedFields(updates: ProposedChangeUpdates): string[] {
   const parts: string[] = []
   if (updates.frequency) parts.push(FREQUENCY_LABELS[updates.frequency])
   if (updates.timeOfDay) parts.push(TIME_OF_DAY_LABELS[updates.timeOfDay])
-  if (updates.category) parts.push(CATEGORY_LABELS[updates.category])
+  if (updates.bucket) parts.push(BUCKET_LABELS[updates.bucket])
   return parts
 }
 
@@ -266,7 +267,7 @@ export function ProgramAuditDialog({
   onCommitted: () => void | Promise<void>
 }) {
   const { apiClient, isReady } = useApiClient()
-  const [session, setSession] = useState<ProgramAuditSessionPayload | null>(null)
+  const [session, setSession] = useState<CareAgentSessionPayload<PlanAuditDraft> | null>(null)
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -291,20 +292,20 @@ export function ProgramAuditDialog({
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
-  }, [session?.messages, session?.plan?.changes.length])
+  }, [session?.messages, session?.draft?.plan?.changes.length])
 
   useEffect(() => {
-    if (session?.plan?.changes) {
-      setSelectedChangeIds(new Set(session.plan.changes.map(c => c.id)))
+    if (session?.draft?.plan?.changes) {
+      setSelectedChangeIds(new Set(session.draft.plan.changes.map(c => c.id)))
     }
-  }, [session?.plan])
+  }, [session?.draft?.plan])
 
   const startAudit = useCallback(async () => {
     if (!isReady || busy) return
     setBusy(true)
     setError(null)
     try {
-      const res = await apiClient.createProgramAuditSession(dogId)
+      const res = await apiClient.createCareAgentSession<PlanAuditDraft>(dogId, 'PLAN_AUDIT')
       setSession(res.data)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to start audit')
@@ -329,7 +330,7 @@ export function ProgramAuditDialog({
     if (!message) setInput('')
 
     try {
-      const res = await apiClient.sendProgramAuditMessage(dogId, session.id, text)
+      const res = await apiClient.sendCareAgentMessage<PlanAuditDraft>(dogId, session.id, text)
       setSession(res.data)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
@@ -343,11 +344,9 @@ export function ProgramAuditDialog({
     setBusy(true)
     setError(null)
     try {
-      await apiClient.confirmProgramAuditSession(
-        dogId,
-        session.id,
-        Array.from(selectedChangeIds)
-      )
+      await apiClient.confirmCareAgentSession(dogId, session.id, {
+        selectedChangeIds: Array.from(selectedChangeIds)
+      })
       onOpenChange(false)
       await onCommitted()
     } catch (e) {
@@ -360,7 +359,7 @@ export function ProgramAuditDialog({
   const handleCancel = async () => {
     if (session && isReady && session.status !== 'COMMITTED') {
       try {
-        await apiClient.cancelProgramAuditSession(dogId, session.id)
+        await apiClient.cancelCareAgentSession(dogId, session.id)
       } catch {
         /* ignore */
       }
@@ -378,8 +377,13 @@ export function ProgramAuditDialog({
   }
 
   const isLoading = busy && !session
-  const reportReady = session?.status === 'REPORT_READY'
-  const planReady = session?.status === 'PLAN_READY' && session.plan
+  // The former REPORT_READY / PLAN_READY statuses are now expressed by the draft's
+  // contents: a report with no plan is the report stage; a plan present is the
+  // proposed-changes stage (unified CareAgentSession — ADR-0002).
+  const report = session?.draft?.report ?? null
+  const plan = session?.draft?.plan ?? null
+  const reportReady = !!report && !plan
+  const planReady = !!plan
   const failed = session?.status === 'FAILED'
 
   return (
@@ -404,7 +408,7 @@ export function ProgramAuditDialog({
               ref={scrollRef}
               className="flex-1 min-h-0 overflow-y-auto space-y-3 py-2 max-h-[50vh]"
             >
-              {session?.report && <AuditReportCard report={session.report} />}
+              {report && <AuditReportCard report={report} />}
 
               {session?.messages.map((m, i) => (
                 <div
@@ -420,9 +424,9 @@ export function ProgramAuditDialog({
                 </div>
               ))}
 
-              {planReady && (
+              {planReady && plan && (
                 <ProposedChangesList
-                  plan={session.plan!}
+                  plan={plan}
                   selectedIds={selectedChangeIds}
                   onToggle={toggleChange}
                 />

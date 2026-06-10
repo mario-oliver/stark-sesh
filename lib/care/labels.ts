@@ -1,5 +1,4 @@
 import type {
-  CareActionCategory,
   CareActionFrequency,
   CareActionTimeOfDay,
   CareBucket
@@ -16,16 +15,6 @@ export const BUCKET_OPTIONS = Object.entries(BUCKET_LABELS).map(([value, label])
   label
 }))
 
-export const CATEGORY_LABELS: Record<CareActionCategory, string> = {
-  STRETCH: 'Stretch',
-  STRENGTH: 'Strength',
-  MOBILITY: 'Mobility',
-  WALK: 'Walk',
-  MEDICATION: 'Medication',
-  GENERAL_CARE: 'General care',
-  OBSERVATION_CHECKPOINT: 'Checkpoint'
-}
-
 export const FREQUENCY_LABELS: Record<CareActionFrequency, string> = {
   DAILY: 'Daily',
   EVERY_OTHER_DAY: 'Every other day',
@@ -38,11 +27,6 @@ export const TIME_OF_DAY_LABELS: Record<CareActionTimeOfDay, string> = {
   EVENING: 'Evening',
   ANYTIME: 'Anytime'
 }
-
-export const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS).map(([value, label]) => ({
-  value: value as CareActionCategory,
-  label
-}))
 
 export const FREQUENCY_OPTIONS = Object.entries(FREQUENCY_LABELS).map(([value, label]) => ({
   value: value as CareActionFrequency,

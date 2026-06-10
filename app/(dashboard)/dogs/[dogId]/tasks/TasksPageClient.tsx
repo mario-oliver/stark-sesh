@@ -25,7 +25,7 @@ import type {
   CareBucket,
   CarePlanPayload,
   CreateCareActionInput,
-  DailyTaskRecord,
+  DailyCareActionRecord,
   TodayPayload,
   UpdateCareActionInput
 } from '@/lib/api/endpoints/dogs'
@@ -40,7 +40,7 @@ import { cn } from '@/lib/utils'
 type Tab = 'routine' | 'schedule'
 
 function actionBucket(action: CareActionRecord): CareBucket {
-  return action.bucket ?? 'ACTIVITY'
+  return action.bucket
 }
 
 export function TasksPageClient({ dogId }: { dogId: string }) {
@@ -131,12 +131,12 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
     [plan, routineBucket]
   )
 
-  const scheduleTasks: DailyTaskRecord[] = useMemo(() => {
+  const scheduleTasks: DailyCareActionRecord[] = useMemo(() => {
     if (!schedulePayload) return []
     return [
-      ...schedulePayload.buckets.activity.tasks,
-      ...schedulePayload.buckets.mobility.tasks,
-      ...schedulePayload.buckets.recovery.tasks
+      ...schedulePayload.buckets.activity.actions,
+      ...schedulePayload.buckets.mobility.actions,
+      ...schedulePayload.buckets.recovery.actions
     ]
   }, [schedulePayload])
 
@@ -336,16 +336,6 @@ export function TasksPageClient({ dogId }: { dogId: string }) {
         action={editingAction}
         onSubmit={handleSaveAction}
         busy={busy}
-        dogId={dogId}
-        onMovementsChanged={async () => {
-          if (!isReady) return
-          const res = await apiClient.getCarePlan(dogId)
-          setPlan(res.data)
-          if (editingAction) {
-            const refreshed = res.data.actions.find(a => a.id === editingAction.id)
-            if (refreshed) setEditingAction(refreshed)
-          }
-        }}
       />
 
       <Dialog open={!!deactivatingAction} onOpenChange={open => !open && setDeactivatingAction(null)}>

@@ -252,7 +252,7 @@ export default function OnboardingPage() {
                 >
                   <div>
                     <p className="text-foreground">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.category}</p>
+                    <p className="text-xs text-muted-foreground">{item.bucket}</p>
                   </div>
                   <p className="text-xs text-muted-foreground text-right shrink-0">{item.frequency}</p>
                 </li>
