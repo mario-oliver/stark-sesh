@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { framePath, getAnimationDefinition } from '@/lib/sprites/animations'
 import type { SpriteAnimation } from '@/lib/sprites/types'
+import { resolveFrameSrc, type SpriteSource, BUNDLED_SOURCE } from '@/lib/sprites/source'
 
 function usePrefersReducedMotion(): boolean {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
@@ -25,6 +26,8 @@ type UseSpriteAnimationOptions = {
   paused?: boolean
   animated?: boolean
   onComplete?: () => void
+  /** Override the frame source. Defaults to BUNDLED_SOURCE (reads from SpriteSourceContext). */
+  source?: SpriteSource
 }
 
 export function useSpriteAnimation({
@@ -33,7 +36,8 @@ export function useSpriteAnimation({
   fps,
   paused = false,
   animated,
-  onComplete
+  onComplete,
+  source = BUNDLED_SOURCE
 }: UseSpriteAnimationOptions) {
   const definition = getAnimationDefinition(animation)
   const shouldLoop = loop ?? definition.loop
@@ -91,7 +95,7 @@ export function useSpriteAnimation({
 
   return {
     frameIndex: resolvedIndex,
-    frameSrc: framePath(animation, resolvedIndex),
+    frameSrc: resolveFrameSrc(source, animation, resolvedIndex),
     prefersReducedMotion,
     shouldAnimate
   }

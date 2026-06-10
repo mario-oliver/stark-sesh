@@ -20,51 +20,27 @@ export type HealthObservationType =
   | 'LOW_ENERGY'
   | 'APPETITE'
   | 'BATHROOM'
-  | 'MEDICATION'
   | 'GENERAL_NOTE'
 
-export type CareActionCategory =
-  | 'STRETCH'
-  | 'STRENGTH'
-  | 'MOBILITY'
-  | 'WALK'
-  | 'MEDICATION'
-  | 'GENERAL_CARE'
-  | 'OBSERVATION_CHECKPOINT'
+export type ObservationSeverity = 'MILD' | 'MODERATE' | 'SEVERE' | 'UNKNOWN'
 
+// Bucket is the ONLY categorization (ADR-0002). There is no second `category` taxonomy.
 export type CareBucket = 'ACTIVITY' | 'MOBILITY' | 'RECOVERY'
 
-export type DailyTaskSource = 'PLAN' | 'AD_HOC' | 'LLM_EXTRACTED' | 'PLAN_VARIATION'
+export type DailyCareActionSource = 'PLAN' | 'AD_HOC' | 'LLM_EXTRACTED' | 'PLAN_VARIATION'
 
 export type CareActionFrequency = 'DAILY' | 'EVERY_OTHER_DAY' | 'WEEKLY' | 'AS_NEEDED'
 
 export type CareActionTimeOfDay = 'MORNING' | 'EVENING' | 'ANYTIME'
 
-export interface CareActionStepRecord {
-  id: string
-  careActionId: string
-  name: string
-  bucket: CareBucket | null
-  description: string | null
-  instructions: string | null
-  targetReps: number | null
-  targetDurationSeconds: number | null
-  mediaKey: string | null
-  mediaContentType: string | null
-  mediaUrl: string | null
-  sortOrder: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-}
-
+// One flat, polymorphic, prescribed care item. No sub-steps — distinct movements are
+// distinct CareActions. `bucket` is required (ADR-0002).
 export interface CareActionRecord {
   id: string
   carePlanId: string
   name: string
   description: string | null
-  category: CareActionCategory
-  bucket: CareBucket | null
+  bucket: CareBucket
   frequency: CareActionFrequency
   timeOfDay: CareActionTimeOfDay | null
   targetReps: number | null
@@ -74,41 +50,21 @@ export interface CareActionRecord {
   isActive: boolean
   createdAt: string
   updatedAt: string
-  steps: CareActionStepRecord[]
 }
 
-export interface CreateCareActionStepInput {
+export interface CreateCareActionInput {
   name: string
-  bucket?: CareBucket | null
   description?: string | null
-  instructions?: string | null
+  bucket: CareBucket
+  frequency: CareActionFrequency
+  timeOfDay?: CareActionTimeOfDay | null
   targetReps?: number | null
   targetDurationSeconds?: number | null
-  mediaKey?: string | null
-  mediaContentType?: string | null
+  instructions?: string | null
   sortOrder?: number
 }
 
-export interface UpdateCareActionStepInput extends Partial<CreateCareActionStepInput> {}
-
-export interface DailyCareActionStepRecord {
-  id: string
-  dailyCareActionId: string
-  careActionStepId: string
-  nameSnapshot: string
-  description: string | null
-  instructions: string | null
-  targetReps: number | null
-  targetDurationSeconds: number | null
-  mediaKey: string | null
-  mediaContentType: string | null
-  mediaUrl: string | null
-  status: DailyCareActionStatus
-  completedAt: string | null
-  completedByUserId: string | null
-  notes: string | null
-  completedBy: UserSummary | null
-}
+export type UpdateCareActionInput = Partial<CreateCareActionInput>
 
 export interface CarePlanPayload {
   id: string
@@ -120,73 +76,55 @@ export interface CarePlanPayload {
   actions: CareActionRecord[]
 }
 
-export interface CreateCareActionInput {
-  name: string
-  description?: string | null
-  category: CareActionCategory
-  bucket?: CareBucket | null
-  frequency: CareActionFrequency
-  timeOfDay?: CareActionTimeOfDay | null
-  targetReps?: number | null
-  targetDurationSeconds?: number | null
-  instructions?: string | null
-  sortOrder?: number
-}
+// ---------------------------------------------------------------------------
+// CareAgentSession — the single conversational producer (ADR-0002). Replaces the two
+// former agent-session tables (the exercise-agent and program-audit sessions). `kind`
+// captures entry intent; `draft` is refined-across-turns JSON whose shape depends on
+// kind (typed per dialog via the generic parameter below).
+// ---------------------------------------------------------------------------
+export type CareAgentSessionKind = 'DAILY_LOG' | 'PLAN_BUILD' | 'PLAN_AUDIT'
 
-export type ExerciseAgentSessionStatus =
+export type CareAgentSessionStatus =
   | 'ACTIVE'
   | 'AWAITING_INPUT'
   | 'DRAFT_READY'
   | 'COMMITTED'
   | 'FAILED'
 
-export interface ProposedMovement {
-  name: string
-  description?: string | null
-  instructions?: string | null
-  sortOrder?: number
+export interface CareAgentMessage {
+  role: 'user' | 'assistant'
+  content: string
 }
 
-export interface ProposedExercise {
+export interface CareAgentSessionPayload<TDraft = unknown> {
+  id: string
+  dogId: string
+  kind: CareAgentSessionKind
+  status: CareAgentSessionStatus
+  messages: CareAgentMessage[]
+  questions: string[]
+  draft: TDraft | null
+  voiceNoteId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// PLAN_BUILD draft: a single proposed CareAction (bucket-based, no movements).
+export interface ProposedCareAction {
   name: string
   description?: string | null
-  category: CareActionCategory
+  bucket: CareBucket
   frequency: CareActionFrequency
   timeOfDay?: CareActionTimeOfDay | null
   targetReps?: number | null
   targetDurationSeconds?: number | null
   instructions?: string | null
-  movements: ProposedMovement[]
   rationale: string
   safetyNotes: string
   researchSummary: string
 }
 
-export interface ExerciseAgentMessage {
-  role: 'user' | 'assistant'
-  content: string
-}
-
-export interface ExerciseAgentSessionPayload {
-  id: string
-  dogId: string
-  status: ExerciseAgentSessionStatus
-  messages: ExerciseAgentMessage[]
-  questions: string[]
-  draft: ProposedExercise | null
-  research: unknown
-  createdAt: string
-  updatedAt: string
-}
-
-export type ProgramAuditSessionStatus =
-  | 'ACTIVE'
-  | 'AWAITING_INPUT'
-  | 'REPORT_READY'
-  | 'PLAN_READY'
-  | 'COMMITTED'
-  | 'FAILED'
-
+// PLAN_AUDIT draft pieces (a session of kind PLAN_AUDIT proposes plan changes).
 export interface AuditObservation {
   actionId: string
   actionName: string
@@ -206,7 +144,7 @@ export interface AuditReport {
 export interface ProposedChangeUpdates {
   name?: string
   description?: string | null
-  category?: CareActionCategory
+  bucket?: CareBucket
   frequency?: CareActionFrequency
   timeOfDay?: CareActionTimeOfDay | null
   instructions?: string | null
@@ -218,7 +156,7 @@ export interface ProposedChange {
   actionId?: string
   actionName?: string
   updates?: ProposedChangeUpdates
-  newAction?: ProposedExercise
+  newAction?: ProposedCareAction
   reason: string
 }
 
@@ -227,18 +165,69 @@ export interface ProposedProgramChanges {
   changes: ProposedChange[]
 }
 
-export interface ProgramAuditSessionPayload {
-  id: string
-  dogId: string
-  status: ProgramAuditSessionStatus
-  messages: ExerciseAgentMessage[]
+export interface PlanAuditDraft {
   report: AuditReport | null
   plan: ProposedProgramChanges | null
+}
+
+// Result of committing a CareAgentSession. Polymorphic by kind: a PLAN_BUILD commit
+// returns the created action; a PLAN_AUDIT commit returns the applied actions.
+export interface CareAgentCommitResult {
+  status: string
+  action?: CareActionRecord
+  applied?: CareActionRecord[]
+  changesApplied?: number
+}
+
+// ── Sprite Generation types ──────────────────────────────────────────────────
+
+export type SpriteGenerationStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'AWAITING_INPUT'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELED'
+
+export interface SpriteGenerationSessionRecord {
+  id: string
+  dogId: string
+  userId: string
+  status: SpriteGenerationStatus
+  currentStep: string | null
+  progress: number
+  breedInput: string
+  normalizedBreed: string | null
+  spriteSetId: string | null
+  error: string | null
+  steps: Record<string, unknown>
   createdAt: string
   updatedAt: string
 }
 
-export interface UpdateCareActionInput extends Partial<CreateCareActionInput> {}
+export interface SpriteManifestAnimationEntry {
+  frames: number
+  fps: number
+  loop: boolean
+  keys: string[]
+}
+
+export interface SpriteSetRecord {
+  id: string
+  dogId: string
+  isActive: boolean
+  styleVersion: string
+  storagePrefix: string
+  manifest: {
+    styleVersion: string
+    breed: string
+    generatedAt: string
+    animations: Partial<Record<string, SpriteManifestAnimationEntry>>
+  }
+  /** Base URL for frame requests, e.g. https://api/.../sprites */
+  frameBaseUrl: string
+  createdAt: string
+}
 
 export interface CalendarDaySummary {
   date: string
@@ -314,35 +303,47 @@ export interface UpdateDogInput {
   notes?: string | null
 }
 
+// The single dated execution record (ADR-0002): absorbs the former parallel daily-task
+// record. Carries `bucket` directly (no category snapshot); no sub-steps; no
+// separate "issue observed" flag.
 export interface DailyCareActionRecord {
   id: string
   dailyCareLogId: string
-  careActionId: string
+  bucket: CareBucket
+  source: DailyCareActionSource
   nameSnapshot: string
-  categorySnapshot: string
+  descriptionSnapshot: string | null
+  instructionsSnapshot: string | null
   status: DailyCareActionStatus
   completedAt: string | null
   completedByUserId: string | null
   notes: string | null
   tolerance: Tolerance | null
-  issueObserved: boolean
   targetReps: number | null
+  actualReps: number | null
   targetDurationSeconds: number | null
+  actualDurationSeconds: number | null
+  careActionId: string | null
+  substitutedForId: string | null
+  substitutedFor: { id: string; nameSnapshot: string } | null
+  extractionConfidence: number | null
+  needsReview: boolean
+  sortOrder: number
   completedBy: UserSummary | null
-  steps: DailyCareActionStepRecord[]
-  movementProgress: { completed: number; total: number } | null
+  createdAt: string
+  updatedAt: string
 }
 
+// VoiceNote is a dumb artifact (ADR-0002): audio + transcript + transcription status
+// only. Extraction is conversational and lives in a CareAgentSession.
 export interface VoiceNoteRecord {
   id: string
   dogId: string
   dailyCareLogId: string
   userId: string
+  audioUrl: string | null
   transcript: string
   processingStatus: VoiceNoteProcessingStatus
-  extraction: unknown
-  caregiverNote: string | null
-  needsReview: boolean
   createdAt: string
   user: UserSummary
 }
@@ -351,7 +352,7 @@ export interface HealthObservationRecord {
   id: string
   type: HealthObservationType
   bucket: CareBucket | null
-  severity: string | null
+  severity: ObservationSeverity | string | null
   bodyArea: string | null
   note: string
   observedAt: string | null
@@ -368,40 +369,8 @@ export interface BucketScore {
   computedAt: string
 }
 
-export interface DailyTaskRecord {
-  id: string
-  dailyCareLogId: string
-  bucket: CareBucket
-  source: DailyTaskSource
-  nameSnapshot: string
-  descriptionSnapshot: string | null
-  instructionsSnapshot: string | null
-  status: DailyCareActionStatus
-  completedAt: string | null
-  completedByUserId: string | null
-  notes: string | null
-  targetReps: number | null
-  actualReps: number | null
-  targetDurationSeconds: number | null
-  actualDurationSeconds: number | null
-  careActionId: string | null
-  careActionStepId: string | null
-  substitutedForTaskId: string | null
-  substitutedFor: { id: string; nameSnapshot: string } | null
-  metadata: unknown
-  extractionConfidence: number | null
-  needsReview: boolean
-  sortOrder: number
-  mediaKey: string | null
-  mediaContentType: string | null
-  mediaUrl: string | null
-  completedBy: UserSummary | null
-  createdAt: string
-  updatedAt: string
-}
-
 export interface BucketPayload {
-  tasks: DailyTaskRecord[]
+  actions: DailyCareActionRecord[]
   observations: HealthObservationRecord[]
   progress?: { completed: number; total: number }
   score: BucketScore | null
@@ -473,7 +442,9 @@ export interface DogsApi {
       status?: DailyCareActionStatus
       notes?: string
       tolerance?: Tolerance | null
-      issueObserved?: boolean
+      actualReps?: number | null
+      actualDurationSeconds?: number | null
+      needsReview?: boolean
     }
   ): Promise<{ success: boolean; data: DailyCareActionRecord }>
   addDogMember(dogId: string, userId: string, role?: string): Promise<{ success: boolean; data: unknown }>
@@ -492,39 +463,7 @@ export interface DogsApi {
     dogId: string,
     actionId: string
   ): Promise<{ success: boolean; data: CareActionRecord }>
-  createCareActionStep(
-    dogId: string,
-    actionId: string,
-    input: CreateCareActionStepInput
-  ): Promise<{ success: boolean; data: CareActionStepRecord }>
-  updateCareActionStep(
-    dogId: string,
-    actionId: string,
-    stepId: string,
-    input: UpdateCareActionStepInput
-  ): Promise<{ success: boolean; data: CareActionStepRecord }>
-  deactivateCareActionStep(
-    dogId: string,
-    actionId: string,
-    stepId: string
-  ): Promise<{ success: boolean; data: CareActionStepRecord }>
-  updateDailyActionStep(
-    dogId: string,
-    stepId: string,
-    body: { status?: DailyCareActionStatus; notes?: string }
-  ): Promise<{ success: boolean; data: DailyCareActionStepRecord }>
-  updateDailyTask(
-    dogId: string,
-    taskId: string,
-    body: {
-      status?: DailyCareActionStatus
-      notes?: string
-      actualReps?: number | null
-      actualDurationSeconds?: number | null
-      needsReview?: boolean
-    }
-  ): Promise<{ success: boolean; data: DailyTaskRecord }>
-  createDailyTask(
+  createDailyCareAction(
     dogId: string,
     body: {
       dailyCareLogId?: string
@@ -536,12 +475,12 @@ export interface DogsApi {
       targetReps?: number | null
       targetDurationSeconds?: number | null
     }
-  ): Promise<{ success: boolean; data: DailyTaskRecord }>
-  reviewDailyTask(
+  ): Promise<{ success: boolean; data: DailyCareActionRecord }>
+  reviewDailyCareAction(
     dogId: string,
-    taskId: string,
+    actionId: string,
     body: { accept: boolean; status?: DailyCareActionStatus }
-  ): Promise<{ success: boolean; data: DailyTaskRecord | { deleted: boolean } }>
+  ): Promise<{ success: boolean; data: DailyCareActionRecord | { deleted: boolean } }>
   recomputeScores(
     dogId: string,
     logId: string
@@ -549,56 +488,42 @@ export interface DogsApi {
   getCalendar(dogId: string, month: string): Promise<{ success: boolean; data: CalendarPayload }>
   previewJoin(code: string): Promise<{ success: boolean; data: JoinPreview }>
   joinByShareCode(shareCode: string): Promise<{ success: boolean; data: DogRecord; message?: string }>
-  createExerciseAgentSession(
+  createCareAgentSession<TDraft = unknown>(
     dogId: string,
-    message: string
-  ): Promise<{ success: boolean; data: ExerciseAgentSessionPayload; message?: string }>
-  getExerciseAgentSession(
+    kind: CareAgentSessionKind,
+    message?: string
+  ): Promise<{ success: boolean; data: CareAgentSessionPayload<TDraft>; message?: string }>
+  getCareAgentSession<TDraft = unknown>(
     dogId: string,
     sessionId: string
-  ): Promise<{ success: boolean; data: ExerciseAgentSessionPayload }>
-  sendExerciseAgentMessage(
+  ): Promise<{ success: boolean; data: CareAgentSessionPayload<TDraft> }>
+  sendCareAgentMessage<TDraft = unknown>(
     dogId: string,
     sessionId: string,
     message: string
-  ): Promise<{ success: boolean; data: ExerciseAgentSessionPayload }>
-  confirmExerciseAgentSession(
+  ): Promise<{ success: boolean; data: CareAgentSessionPayload<TDraft> }>
+  confirmCareAgentSession(
     dogId: string,
-    sessionId: string
-  ): Promise<{
-    success: boolean
-    data: { action: CareActionRecord; status: string }
-    message?: string
-  }>
-  cancelExerciseAgentSession(
+    sessionId: string,
+    options?: { selectedChangeIds?: string[] }
+  ): Promise<{ success: boolean; data: CareAgentCommitResult; message?: string }>
+  cancelCareAgentSession(
     dogId: string,
     sessionId: string
   ): Promise<{ success: boolean; data: { cancelled: boolean } }>
-  createProgramAuditSession(
-    dogId: string
-  ): Promise<{ success: boolean; data: ProgramAuditSessionPayload; message?: string }>
-  getProgramAuditSession(
+  createSpriteSession(
+    dogId: string,
+    body: { photoKey: string; breed: string }
+  ): Promise<{ success: boolean; data: SpriteGenerationSessionRecord; message?: string }>
+  getSpriteSession(
     dogId: string,
     sessionId: string
-  ): Promise<{ success: boolean; data: ProgramAuditSessionPayload }>
-  sendProgramAuditMessage(
-    dogId: string,
-    sessionId: string,
-    message: string
-  ): Promise<{ success: boolean; data: ProgramAuditSessionPayload }>
-  confirmProgramAuditSession(
-    dogId: string,
-    sessionId: string,
-    selectedChangeIds?: string[]
-  ): Promise<{
-    success: boolean
-    data: { applied: CareActionRecord[]; changesApplied: number; status: string }
-    message?: string
-  }>
-  cancelProgramAuditSession(
+  ): Promise<{ success: boolean; data: SpriteGenerationSessionRecord }>
+  cancelSpriteSession(
     dogId: string,
     sessionId: string
-  ): Promise<{ success: boolean; data: { cancelled: boolean } }>
+  ): Promise<{ success: boolean; data: { canceled: boolean } }>
+  getDogSpriteSet(dogId: string): Promise<{ success: boolean; data: SpriteSetRecord | null }>
 }
 
 export const dogsMethods = {
@@ -662,7 +587,9 @@ export const dogsMethods = {
       status?: DailyCareActionStatus
       notes?: string
       tolerance?: Tolerance | null
-      issueObserved?: boolean
+      actualReps?: number | null
+      actualDurationSeconds?: number | null
+      needsReview?: boolean
     }
   ) {
     return this.request<{ success: boolean; data: DailyCareActionRecord }>(
@@ -715,69 +642,7 @@ export const dogsMethods = {
     )
   },
 
-  async createCareActionStep(
-    this: ApiClient,
-    dogId: string,
-    actionId: string,
-    input: CreateCareActionStepInput
-  ) {
-    return this.request<{ success: boolean; data: CareActionStepRecord }>(
-      `/v1/dogs/${dogId}/care-plan/actions/${actionId}/steps`,
-      { method: 'POST', data: input }
-    )
-  },
-
-  async updateCareActionStep(
-    this: ApiClient,
-    dogId: string,
-    actionId: string,
-    stepId: string,
-    input: UpdateCareActionStepInput
-  ) {
-    return this.request<{ success: boolean; data: CareActionStepRecord }>(
-      `/v1/dogs/${dogId}/care-plan/actions/${actionId}/steps/${stepId}`,
-      { method: 'PATCH', data: input }
-    )
-  },
-
-  async deactivateCareActionStep(this: ApiClient, dogId: string, actionId: string, stepId: string) {
-    return this.request<{ success: boolean; data: CareActionStepRecord }>(
-      `/v1/dogs/${dogId}/care-plan/actions/${actionId}/steps/${stepId}/deactivate`,
-      { method: 'PATCH' }
-    )
-  },
-
-  async updateDailyActionStep(
-    this: ApiClient,
-    dogId: string,
-    stepId: string,
-    body: { status?: DailyCareActionStatus; notes?: string }
-  ) {
-    return this.request<{ success: boolean; data: DailyCareActionStepRecord }>(
-      `/v1/dogs/${dogId}/daily-action-steps/${stepId}`,
-      { method: 'PATCH', data: body }
-    )
-  },
-
-  async updateDailyTask(
-    this: ApiClient,
-    dogId: string,
-    taskId: string,
-    body: {
-      status?: DailyCareActionStatus
-      notes?: string
-      actualReps?: number | null
-      actualDurationSeconds?: number | null
-      needsReview?: boolean
-    }
-  ) {
-    return this.request<{ success: boolean; data: DailyTaskRecord }>(
-      `/v1/dogs/${dogId}/daily-tasks/${taskId}`,
-      { method: 'PATCH', data: body }
-    )
-  },
-
-  async createDailyTask(
+  async createDailyCareAction(
     this: ApiClient,
     dogId: string,
     body: {
@@ -791,20 +656,20 @@ export const dogsMethods = {
       targetDurationSeconds?: number | null
     }
   ) {
-    return this.request<{ success: boolean; data: DailyTaskRecord }>(
-      `/v1/dogs/${dogId}/daily-tasks`,
+    return this.request<{ success: boolean; data: DailyCareActionRecord }>(
+      `/v1/dogs/${dogId}/daily-actions`,
       { method: 'POST', data: body }
     )
   },
 
-  async reviewDailyTask(
+  async reviewDailyCareAction(
     this: ApiClient,
     dogId: string,
-    taskId: string,
+    actionId: string,
     body: { accept: boolean; status?: DailyCareActionStatus }
   ) {
-    return this.request<{ success: boolean; data: DailyTaskRecord | { deleted: boolean } }>(
-      `/v1/dogs/${dogId}/daily-tasks/${taskId}/review`,
+    return this.request<{ success: boolean; data: DailyCareActionRecord | { deleted: boolean } }>(
+      `/v1/dogs/${dogId}/daily-actions/${actionId}/review`,
       { method: 'PATCH', data: body }
     )
   },
@@ -836,84 +701,84 @@ export const dogsMethods = {
     })
   },
 
-  async createExerciseAgentSession(this: ApiClient, dogId: string, message: string) {
-    return this.request<{ success: boolean; data: ExerciseAgentSessionPayload; message?: string }>(
-      `/v1/dogs/${dogId}/exercise-agent/sessions`,
-      { method: 'POST', data: { message } }
+  async createCareAgentSession<TDraft = unknown>(
+    this: ApiClient,
+    dogId: string,
+    kind: CareAgentSessionKind,
+    message?: string
+  ) {
+    return this.request<{ success: boolean; data: CareAgentSessionPayload<TDraft>; message?: string }>(
+      `/v1/dogs/${dogId}/care-agent/sessions`,
+      { method: 'POST', data: { kind, message } }
     )
   },
 
-  async getExerciseAgentSession(this: ApiClient, dogId: string, sessionId: string) {
-    return this.request<{ success: boolean; data: ExerciseAgentSessionPayload }>(
-      `/v1/dogs/${dogId}/exercise-agent/sessions/${sessionId}`
+  async getCareAgentSession<TDraft = unknown>(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{ success: boolean; data: CareAgentSessionPayload<TDraft> }>(
+      `/v1/dogs/${dogId}/care-agent/sessions/${sessionId}`
     )
   },
 
-  async sendExerciseAgentMessage(this: ApiClient, dogId: string, sessionId: string, message: string) {
-    return this.request<{ success: boolean; data: ExerciseAgentSessionPayload }>(
-      `/v1/dogs/${dogId}/exercise-agent/sessions/${sessionId}/messages`,
-      { method: 'POST', data: { message } }
-    )
-  },
-
-  async confirmExerciseAgentSession(this: ApiClient, dogId: string, sessionId: string) {
-    return this.request<{
-      success: boolean
-      data: { action: CareActionRecord; status: string }
-      message?: string
-    }>(`/v1/dogs/${dogId}/exercise-agent/sessions/${sessionId}/confirm`, {
-      method: 'POST',
-      data: {}
-    })
-  },
-
-  async cancelExerciseAgentSession(this: ApiClient, dogId: string, sessionId: string) {
-    return this.request<{ success: boolean; data: { cancelled: boolean } }>(
-      `/v1/dogs/${dogId}/exercise-agent/sessions/${sessionId}`,
-      { method: 'DELETE' }
-    )
-  },
-
-  async createProgramAuditSession(this: ApiClient, dogId: string) {
-    return this.request<{ success: boolean; data: ProgramAuditSessionPayload; message?: string }>(
-      `/v1/dogs/${dogId}/program-audit/sessions`,
-      { method: 'POST', data: {} }
-    )
-  },
-
-  async getProgramAuditSession(this: ApiClient, dogId: string, sessionId: string) {
-    return this.request<{ success: boolean; data: ProgramAuditSessionPayload }>(
-      `/v1/dogs/${dogId}/program-audit/sessions/${sessionId}`
-    )
-  },
-
-  async sendProgramAuditMessage(this: ApiClient, dogId: string, sessionId: string, message: string) {
-    return this.request<{ success: boolean; data: ProgramAuditSessionPayload }>(
-      `/v1/dogs/${dogId}/program-audit/sessions/${sessionId}/messages`,
-      { method: 'POST', data: { message } }
-    )
-  },
-
-  async confirmProgramAuditSession(
+  async sendCareAgentMessage<TDraft = unknown>(
     this: ApiClient,
     dogId: string,
     sessionId: string,
-    selectedChangeIds?: string[]
+    message: string
   ) {
-    return this.request<{
-      success: boolean
-      data: { applied: CareActionRecord[]; changesApplied: number; status: string }
-      message?: string
-    }>(`/v1/dogs/${dogId}/program-audit/sessions/${sessionId}/confirm`, {
-      method: 'POST',
-      data: { selectedChangeIds }
-    })
+    return this.request<{ success: boolean; data: CareAgentSessionPayload<TDraft> }>(
+      `/v1/dogs/${dogId}/care-agent/sessions/${sessionId}/messages`,
+      { method: 'POST', data: { message } }
+    )
   },
 
-  async cancelProgramAuditSession(this: ApiClient, dogId: string, sessionId: string) {
+  async confirmCareAgentSession(
+    this: ApiClient,
+    dogId: string,
+    sessionId: string,
+    options?: { selectedChangeIds?: string[] }
+  ) {
+    return this.request<{ success: boolean; data: CareAgentCommitResult; message?: string }>(
+      `/v1/dogs/${dogId}/care-agent/sessions/${sessionId}/confirm`,
+      { method: 'POST', data: options ?? {} }
+    )
+  },
+
+  async cancelCareAgentSession(this: ApiClient, dogId: string, sessionId: string) {
     return this.request<{ success: boolean; data: { cancelled: boolean } }>(
-      `/v1/dogs/${dogId}/program-audit/sessions/${sessionId}`,
+      `/v1/dogs/${dogId}/care-agent/sessions/${sessionId}`,
       { method: 'DELETE' }
+    )
+  },
+
+  // ── Sprite Generation ─────────────────────────────────────────────────────
+
+  async createSpriteSession(
+    this: ApiClient,
+    dogId: string,
+    body: { photoKey: string; breed: string }
+  ) {
+    return this.request<{ success: boolean; data: SpriteGenerationSessionRecord; message?: string }>(
+      `/v1/dogs/${dogId}/sprite-sessions`,
+      { method: 'POST', data: body }
+    )
+  },
+
+  async getSpriteSession(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{ success: boolean; data: SpriteGenerationSessionRecord }>(
+      `/v1/dogs/${dogId}/sprite-sessions/${sessionId}`
+    )
+  },
+
+  async cancelSpriteSession(this: ApiClient, dogId: string, sessionId: string) {
+    return this.request<{ success: boolean; data: { canceled: boolean } }>(
+      `/v1/dogs/${dogId}/sprite-sessions/${sessionId}`,
+      { method: 'DELETE' }
+    )
+  },
+
+  async getDogSpriteSet(this: ApiClient, dogId: string) {
+    return this.request<{ success: boolean; data: SpriteSetRecord | null }>(
+      `/v1/dogs/${dogId}/sprite-set`
     )
   }
 }

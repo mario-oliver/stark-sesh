@@ -14,6 +14,7 @@ import type {
 } from '@/lib/api/endpoints/dogs'
 import { getMeasurementMode } from '@/lib/care/measurement'
 import { caregiverName, formatTimestamp } from '@/lib/care/display'
+import { BUCKET_LABELS } from '@/lib/care/labels'
 
 export function ActionRow({
   action,
@@ -61,10 +62,9 @@ export function ActionRow({
 
   const content = (
     <>
-      {(action.tolerance || action.issueObserved) && (
+      {action.tolerance && (
         <p className="text-sm text-muted-foreground">
-          {action.tolerance && <span>Tolerance: {action.tolerance.toLowerCase()}. </span>}
-          {action.issueObserved && <span className="text-primary">Issue noted.</span>}
+          <span>Tolerance: {action.tolerance.toLowerCase()}.</span>
         </p>
       )}
 
@@ -164,7 +164,7 @@ export function ActionRow({
           <div>
             <p className="font-medium text-foreground">{action.nameSnapshot}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {action.categorySnapshot.replace(/_/g, ' ')}
+              {BUCKET_LABELS[action.bucket]}
             </p>
           </div>
         </div>
