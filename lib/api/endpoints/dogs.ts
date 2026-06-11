@@ -170,13 +170,65 @@ export interface PlanAuditDraft {
   plan: ProposedProgramChanges | null
 }
 
+// DAILY_LOG draft: the review envelope a DAILY_LOG session surfaces (ADR-0003, frozen
+// by API issue 0011 and realized through 0013/0015). Field names mirror the serialized
+// Contract verbatim — completions/adHocActions/observations each carry a stable
+// `changeId` the confirm step selects by; nullable fields are `T | null` (the server
+// emits `null`, never omits — keep this aligned to avoid the bucket-style drift). Each
+// `planChangeSuggestion` is inert: it has no `changeId` and can never be confirmed.
+export interface DailyLogCompletionDraft {
+  changeId: string
+  dailyCareActionId: string
+  nameSnapshot: string
+  bucket: CareBucket
+  actualReps: number | null
+  actualDurationSeconds: number | null
+  tolerance: Tolerance | null
+  extractionConfidence: number
+  needsReview: boolean
+}
+
+export interface DailyLogAdHocActionDraft {
+  changeId: string
+  name: string
+  bucket: CareBucket
+  actualReps: number | null
+  actualDurationSeconds: number | null
+  extractionConfidence: number
+  needsReview: boolean
+}
+
+export interface DailyLogObservationDraft {
+  changeId: string
+  type: HealthObservationType
+  severity: ObservationSeverity | null
+  bodyArea: string | null
+  note: string
+  extractionConfidence: number
+  needsReview: boolean
+}
+
+export interface DailyLogPlanChangeSuggestion {
+  text: string
+  likelyAction: string | null
+}
+
+export interface DailyLogDraft {
+  completions: DailyLogCompletionDraft[]
+  adHocActions: DailyLogAdHocActionDraft[]
+  observations: DailyLogObservationDraft[]
+  planChangeSuggestions: DailyLogPlanChangeSuggestion[]
+}
+
 // Result of committing a CareAgentSession. Polymorphic by kind: a PLAN_BUILD commit
-// returns the created action; a PLAN_AUDIT commit returns the applied actions.
+// returns the created action; a PLAN_AUDIT commit returns the applied actions; a
+// DAILY_LOG commit returns `committed` — the count of logged entries.
 export interface CareAgentCommitResult {
   status: string
   action?: CareActionRecord
   applied?: CareActionRecord[]
   changesApplied?: number
+  committed?: number
 }
 
 // ── Sprite Generation types ──────────────────────────────────────────────────
@@ -491,7 +543,7 @@ export interface DogsApi {
   createCareAgentSession<TDraft = unknown>(
     dogId: string,
     kind: CareAgentSessionKind,
-    message?: string
+    options?: { message?: string; voiceNoteId?: string }
   ): Promise<{ success: boolean; data: CareAgentSessionPayload<TDraft>; message?: string }>
   getCareAgentSession<TDraft = unknown>(
     dogId: string,
@@ -705,11 +757,17 @@ export const dogsMethods = {
     this: ApiClient,
     dogId: string,
     kind: CareAgentSessionKind,
-    message?: string
+    options?: { message?: string; voiceNoteId?: string }
   ) {
+    // DAILY_LOG carries `voiceNoteId` (the durable transcript to extract from);
+    // PLAN_BUILD carries `message`. Only send the keys present so each kind's
+    // request body matches what its server handler expects.
+    const data: { kind: CareAgentSessionKind; message?: string; voiceNoteId?: string } = { kind }
+    if (options?.message !== undefined) data.message = options.message
+    if (options?.voiceNoteId !== undefined) data.voiceNoteId = options.voiceNoteId
     return this.request<{ success: boolean; data: CareAgentSessionPayload<TDraft>; message?: string }>(
       `/v1/dogs/${dogId}/care-agent/sessions`,
-      { method: 'POST', data: { kind, message } }
+      { method: 'POST', data }
     )
   },
 

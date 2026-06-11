@@ -104,7 +104,7 @@ export function ExerciseAgentDialog({
         const res = await apiClient.createCareAgentSession<ProposedCareAction>(
           dogId,
           'PLAN_BUILD',
-          text
+          { message: text }
         )
         setSession(res.data)
       } else {
