@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { BucketSummaryCard } from '@/components/care/BucketSummaryCard'
+import { DailyLogReviewDialog } from '@/components/care/DailyLogReviewDialog'
 import { DogHero } from '@/components/dog/DogHero'
 import { DogSubNav } from '@/components/dog/DogSubNav'
 import { SpriteOverlay } from '@/components/sprite/SpriteOverlay'
@@ -57,6 +58,8 @@ function TodayPageClientInner({ dogId }: { dogId: string }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isTranscribing, setIsTranscribing] = useState(false)
+  // The just-transcribed note to open the DAILY_LOG draft review against (issue 0017).
+  const [review, setReview] = useState<{ voiceNoteId: string; transcript: string } | null>(null)
   const date = localDateString()
 
   const loadToday = useCallback(async () => {
@@ -90,6 +93,12 @@ function TodayPageClientInner({ dogId }: { dogId: string }) {
     try {
       const res = await apiClient.transcribeVoiceNote(dogId, wavBlob, { date })
       setPayload(res.data)
+      // Transcription done → open the draft review for the new note (ADR-0003:
+      // the client drives DAILY_LOG extraction synchronously off the transcript).
+      const note = res.data.dailyLog.voiceNotes[0]
+      if (note && note.transcript.trim()) {
+        setReview({ voiceNoteId: note.id, transcript: note.transcript })
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Recording failed')
     } finally {
@@ -187,6 +196,19 @@ function TodayPageClientInner({ dogId }: { dogId: string }) {
 
       {(isTranscribing || hasProcessingNotes) && (
         <SpriteOverlay preset="voiceProcessing" />
+      )}
+
+      {review && (
+        <DailyLogReviewDialog
+          open={!!review}
+          onOpenChange={isOpen => {
+            if (!isOpen) setReview(null)
+          }}
+          dogId={dogId}
+          voiceNoteId={review.voiceNoteId}
+          transcript={review.transcript}
+          onCommitted={loadToday}
+        />
       )}
     </div>
   )
